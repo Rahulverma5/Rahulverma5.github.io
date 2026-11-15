@@ -262,6 +262,7 @@ section.block { padding-block: 88px 0; }
 /* Section animations */
 .dashcam { position: relative; height: 190px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); overflow: hidden; }
 .dashcam .cap { position: absolute; left: 12px; bottom: 9px; font-family: var(--f-mono); font-size: .7rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.dashcam .cap.r { left: auto; right: 12px; }
 #dashcam, #ppgstrip, #gdstrip { width: 100%; height: 100%; display: block; }
 @media (max-width: 560px) { .dashcam { height: 150px; } }
 
@@ -388,7 +389,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
               <div><h3>Machine Learning Engineer</h3><div class="org"><b>SenseHealth Technologies</b> · Hyderabad</div></div>
               <span class="when">Mar 2024 to Jun 2025</span>
             </div>
-            <div class="dashcam"><canvas id="ppgstrip" aria-hidden="true"></canvas><span class="cap">Illustration · PPG → GlucoNet</span></div>
+            <div class="dashcam"><canvas id="ppgstrip" aria-hidden="true"></canvas><span class="cap r">Illustration · PPG → GlucoNet</span></div>
             <ul>
               <li>Developed <b>GlucoNet</b>, a hybrid CNN–BiLSTM for non-invasive blood-glucose estimation from PPG signals: state-of-the-art <span class="delta">RMSE 3.28 mg/dL</span> and <span class="delta">R² 0.96</span> on public and real-world data.</li>
               <li>Validated GlucoNet on an offline cohort of <b>120 patients</b> at a local hospital: <b>80%</b> of estimates within a 5% error tolerance.</li>
@@ -939,49 +940,82 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
     });
   })();
 
-  /* SenseHealth card: a live PPG trace; a sliding window feeds the model, which updates the estimates */
+  /* SenseHealth card: finger on the sensor -> PPG signal sweeps out -> the model reports vitals */
   sectionCanvas('ppgstrip', {
-    init: function (s) { s.est = { hr: 72, spo2: 98, glu: 104 }; s.lastUpd = 0; },
+    init: function (s) { s.est = { hr: 72, spo2: 98, glu: 104 }; },
     frame: function (s, dt) {
-      var x = s.x, ink = css('--muted'), acc = css('--accent'), trk = css('--track'), grid = css('--grid'), fg = css('--ink');
-      var W = s.w, H = s.h, panel = W > 560 ? 190 : 0, tw = W - panel - 24, pxs = 90, beat = 60 / s.est.hr;
-      x.clearRect(0, 0, W, H);
-      // monitor grid
-      x.strokeStyle = grid; x.lineWidth = 1; x.globalAlpha = 1; x.beginPath();
-      for (var gx = 12; gx < tw + 12; gx += 24) { x.moveTo(gx + .5, 10); x.lineTo(gx + .5, H - 28); }
-      for (var gy = 10; gy < H - 28; gy += 24) { x.moveTo(12, gy + .5); x.lineTo(tw + 12, gy + .5); }
-      x.stroke();
+      var x = s.x, ink = css('--muted'), acc = css('--accent'), trk = css('--track'), grid = css('--grid'), fg = css('--ink'), surf = css('--surface'), line = css('--line');
+      var W = s.w, H = s.h, wide = W > 560, panel = wide ? 190 : 0, dev = wide ? 130 : 96;
+      var CYC = 11, TC = 1.4, TV = TC + 3, TL = TC + 8, u = s.t % CYC, cyc = Math.floor(s.t / CYC);
+      if (cyc !== s.cyc) { s.cyc = cyc; s.est = { hr: 68 + Math.round(Math.random() * 8), spo2: 97 + Math.round(Math.random() * 2), glu: 96 + Math.round(Math.random() * 14) }; }
+      var beat = 60 / s.est.hr, onSensor = u >= TC && u < TL;
       function wave(tt) { var p = ((tt % beat) + beat) % beat / beat; return Math.exp(-Math.pow((p - .16) / .065, 2)) + .42 * Math.exp(-Math.pow((p - .42) / .09, 2)) + .05 * Math.sin(tt * 1.7); }
-      var top = 22, amp = (H - 28 - top) * 0.78, base = H - 34;
-      // trace
-      x.strokeStyle = acc; x.lineWidth = 2; x.beginPath();
-      for (var px = 0; px <= tw; px++) { var tt = s.t - (tw - px) / pxs, y = base - wave(tt) * amp; px ? x.lineTo(12 + px, y) : x.moveTo(12 + px, y); }
+      x.clearRect(0, 0, W, H);
+
+      // ---- device + finger ----
+      var dcx = dev / 2 + 6, baseY = H - 52, padW = dev * 0.62;
+      // finger height: descends, rests, lifts
+      var down = u < TC ? Math.min(1, u / TC) : (u < TL ? 1 : Math.max(0, 1 - (u - TL) / 0.9));
+      var ease = down * down * (3 - 2 * down), tipY = 6 + ease * (baseY - 16 - 6);
+      // sensor body
+      x.globalAlpha = 1; x.fillStyle = surf; x.strokeStyle = ink; x.lineWidth = 1.4;
+      x.beginPath(); x.roundRect ? x.roundRect(dcx - padW / 2, baseY, padW, 30, 8) : x.rect(dcx - padW / 2, baseY, padW, 30); x.fill(); x.stroke();
+      // LED window: glows with each heartbeat while the finger is on it
+      var pulse = onSensor ? wave(u) : 0;
+      x.fillStyle = acc; x.globalAlpha = onSensor ? 0.25 + 0.6 * pulse : 0.15;
+      x.beginPath(); x.ellipse(dcx, baseY + 2, padW * 0.26, 5, 0, 0, 6.283); x.fill();
+      if (onSensor) { x.globalAlpha = 0.18 * pulse; x.beginPath(); x.arc(dcx, baseY - 6, 26, 0, 6.283); x.fill(); }
+      x.globalAlpha = 0.8; x.fillStyle = ink; x.font = '500 9px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.fillText('PPG SENSOR', dcx, baseY + 21); x.textAlign = 'left';
+      // finger (line art)
+      var fw = Math.min(30, dev * 0.26);
+      x.globalAlpha = 1; x.fillStyle = surf; x.strokeStyle = fg; x.lineWidth = 1.6;
+      x.beginPath(); x.moveTo(dcx - fw / 2, -4); x.lineTo(dcx - fw / 2, tipY - fw / 2); x.arc(dcx, tipY - fw / 2, fw / 2, Math.PI, 0, true); x.lineTo(dcx + fw / 2, -4); x.fill(); x.stroke();
+      x.globalAlpha = 0.6; x.strokeStyle = ink; x.lineWidth = 1; // nail + knuckle lines
+      x.beginPath(); x.ellipse(dcx, tipY - fw * 0.75, fw * 0.28, fw * 0.32, 0, Math.PI * 1.05, Math.PI * 1.95, true); x.stroke();
+      x.beginPath(); x.moveTo(dcx - fw * 0.3, tipY - fw * 2.1); x.lineTo(dcx + fw * 0.3, tipY - fw * 2.1); x.stroke();
+      x.globalAlpha = 1;
+
+      // ---- signal sweep ----
+      var t0x = dev + 18, tw = W - panel - t0x - 12, pxs = Math.max(70, tw / 6.5), top = wide ? 22 : 50, base = H - 40, amp = (base - top) * 0.8;
+      x.strokeStyle = grid; x.lineWidth = 1; x.beginPath();
+      for (var gx = t0x; gx <= t0x + tw; gx += 24) { x.moveTo(gx + .5, 10); x.lineTo(gx + .5, H - 30); }
+      for (var gy = 10; gy <= H - 30; gy += 24) { x.moveTo(t0x, gy + .5); x.lineTo(t0x + tw, gy + .5); }
       x.stroke();
-      // beat markers on systolic peaks
-      x.fillStyle = trk;
-      var firstBeat = Math.ceil((s.t - tw / pxs) / beat);
-      for (var b = firstBeat; b * beat <= s.t; b++) { var bt = b * beat + 0.16 * beat, bx = 12 + tw - (s.t - bt) * pxs; if (bx < 12 || bx > 12 + tw) continue;
-        var by = base - wave(bt) * amp - 8; x.globalAlpha = 0.85; x.beginPath(); x.moveTo(bx, by); x.lineTo(bx - 4, by - 6); x.lineTo(bx + 4, by - 6); x.closePath(); x.fill(); }
-      // sliding input window (last 2.5 s)
-      var ww = Math.min(tw * 0.45, 2.5 * pxs), wx = 12 + tw - ww;
-      x.globalAlpha = 0.1; x.fillStyle = trk; x.fillRect(wx, 10, ww, H - 38);
-      x.globalAlpha = 0.8; x.strokeStyle = trk; x.lineWidth = 1.5; x.setLineDash([4, 3]); x.strokeRect(wx + .5, 10.5, ww - 1, H - 39); x.setLineDash([]);
-      x.font = '500 10px "JetBrains Mono", monospace'; x.fillStyle = trk; x.fillText('input window', wx + 6, 22);
-      // model + estimates panel
-      if (s.t - s.lastUpd > 1.6) { s.lastUpd = s.t; s.est.hr = Math.round(70 + Math.random() * 5); s.est.spo2 = 97 + Math.round(Math.random() * 2); s.est.glu = Math.round(100 + Math.random() * 9); s.flash = 1; }
-      s.flash = Math.max(0, (s.flash || 0) - dt * 1.5);
+      // connector from sensor to trace
+      x.globalAlpha = onSensor ? 0.8 : 0.25; x.strokeStyle = trk; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(dcx + padW / 2, baseY + 12); x.lineTo(t0x - 4, baseY + 12); x.stroke(); x.setLineDash([]);
+      var fadeOut = u < TL ? 1 : Math.max(0, 1 - (u - TL) / 1.2);
+      if (u >= TC) {
+        var el = Math.min(u, TL) - TC, head = Math.min(tw, el * pxs);
+        x.globalAlpha = fadeOut; x.strokeStyle = acc; x.lineWidth = 2; x.beginPath();
+        for (var px = 0; px <= head; px++) { var y = base - wave(TC + px / pxs) * amp; px ? x.lineTo(t0x + px, y) : x.moveTo(t0x + px, y); }
+        x.stroke();
+        if (onSensor && head < tw) { x.fillStyle = acc; x.beginPath(); x.arc(t0x + head, base - wave(TC + head / pxs) * amp, 3.5, 0, 6.283); x.fill(); }
+        // beat markers
+        x.fillStyle = trk;
+        for (var b = Math.ceil(TC / beat); (b * beat + .16 * beat - TC) * pxs <= head; b++) { var bt = b * beat + .16 * beat, bx = t0x + (bt - TC) * pxs; if (bx < t0x) continue; var by = base - wave(bt) * amp - 7;
+          x.beginPath(); x.moveTo(bx, by); x.lineTo(bx - 4, by - 6); x.lineTo(bx + 4, by - 6); x.closePath(); x.fill(); }
+      } else {
+        x.globalAlpha = 0.7; x.fillStyle = ink; x.font = '500 11px "JetBrains Mono", monospace'; x.fillText('place finger on sensor…', t0x + 8, H / 2);
+      }
+      x.globalAlpha = 1;
+
+      // ---- vitals ----
+      var ready = u >= TV && u < TL + 1.2, k = Math.min(1, Math.max(0, (u - TV) / 0.8));
+      function val(v, unit) { return ready ? Math.round(v * (0.6 + 0.4 * k)) + unit : '--'; }
       if (panel) {
         var x0 = W - panel - 4, y0 = 10, ph = H - 38;
-        x.globalAlpha = 0.7; x.strokeStyle = trk; x.lineWidth = 1.2; x.beginPath(); x.moveTo(12 + tw, H / 2 - 10); x.lineTo(x0 - 4, H / 2 - 10); x.stroke();
-        x.beginPath(); x.moveTo(x0 - 4, H / 2 - 10); x.lineTo(x0 - 10, H / 2 - 14); x.lineTo(x0 - 10, H / 2 - 6); x.closePath(); x.fillStyle = trk; x.fill();
-        x.globalAlpha = 1; x.fillStyle = css('--surface'); x.fillRect(x0, y0, panel - 8, ph); x.strokeStyle = css('--line'); x.strokeRect(x0 + .5, y0 + .5, panel - 9, ph - 1);
-        x.fillStyle = ink; x.font = '500 10px "JetBrains Mono", monospace'; x.fillText('CNN–BiLSTM ESTIMATES', x0 + 10, y0 + 18);
-        var rows = [['Glucose', s.est.glu + ' mg/dL'], ['Heart rate', s.est.hr + ' bpm'], ['SpO₂', s.est.spo2 + ' %']];
-        rows.forEach(function (r, i) { var ry = y0 + 42 + i * 26;
+        x.fillStyle = surf; x.fillRect(x0, y0, panel - 8, ph); x.strokeStyle = line; x.lineWidth = 1; x.strokeRect(x0 + .5, y0 + .5, panel - 9, ph - 1);
+        x.fillStyle = ink; x.font = '500 10px "JetBrains Mono", monospace';
+        x.fillText(u < TC ? 'WAITING FOR SIGNAL' : (u < TV ? 'READING…' : 'GLUCONET ESTIMATES'), x0 + 10, y0 + 18);
+        if (u >= TC && u < TV) { x.fillStyle = trk; x.fillRect(x0 + 10, y0 + 26, (panel - 28) * ((u - TC) / (TV - TC)), 3); }
+        [['Glucose', val(s.est.glu, ' mg/dL')], ['Heart rate', val(s.est.hr, ' bpm')], ['SpO₂', val(s.est.spo2, ' %')]].forEach(function (r, i) {
+          var ry = y0 + 52 + i * 26; x.globalAlpha = 1;
           x.fillStyle = ink; x.font = '400 11px "IBM Plex Sans", sans-serif'; x.fillText(r[0], x0 + 10, ry);
-          x.textAlign = 'right'; x.font = '600 13px "JetBrains Mono", monospace'; x.fillStyle = i === 0 ? acc : fg; x.globalAlpha = i === 0 ? 0.65 + 0.35 * (1 - s.flash) : 1; x.fillText(r[1], x0 + panel - 18, ry); x.textAlign = 'left'; x.globalAlpha = 1; });
+          x.textAlign = 'right'; x.font = '600 13px "JetBrains Mono", monospace'; x.fillStyle = i === 0 && ready ? acc : fg; x.fillText(r[1], x0 + panel - 18, ry); x.textAlign = 'left';
+        });
       } else {
-        x.fillStyle = acc; x.font = '600 12px "JetBrains Mono", monospace'; x.textAlign = 'right'; x.fillText('glucose ' + s.est.glu + ' mg/dL', W - 12, 22); x.textAlign = 'left';
+        x.textAlign = 'right'; x.font = '600 12px "JetBrains Mono", monospace'; x.fillStyle = ready ? acc : ink; x.fillText('glucose ' + val(s.est.glu, ' mg/dL'), W - 12, 22);
+        x.font = '500 11px "JetBrains Mono", monospace'; x.fillStyle = fg; x.fillText(val(s.est.hr, ' bpm') + ' · SpO₂ ' + val(s.est.spo2, '%'), W - 12, 38); x.textAlign = 'left';
       }
       x.globalAlpha = 1;
     }
