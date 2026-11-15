@@ -88,7 +88,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 /* Hero */
 .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
 #fusion { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 85%, transparent) 38%, transparent 60%); pointer-events: none; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--bg) 62%, transparent) 0%, color-mix(in srgb, var(--bg) 50%, transparent) 40%, transparent 62%); pointer-events: none; }
 .hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: 48px; align-items: center; padding-block: 72px 56px; }
 .hero-text { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 .hero h1 { font-size: var(--s-hero); font-weight: 800; letter-spacing: -0.045em; line-height: .95; white-space: nowrap; }
@@ -262,7 +262,7 @@ section.block { padding-block: 88px 0; }
 /* Section animations */
 .dashcam { position: relative; height: 190px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); overflow: hidden; }
 .dashcam .cap { position: absolute; left: 12px; bottom: 9px; font-family: var(--f-mono); font-size: .7rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
-#dashcam, #ppgstrip { width: 100%; height: 100%; display: block; }
+#dashcam, #ppgstrip, #gdstrip { width: 100%; height: 100%; display: block; }
 @media (max-width: 560px) { .dashcam { height: 150px; } }
 
 /* Contact */
@@ -324,7 +324,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
           <a class="btn primary" href="#contact">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Get in touch</a>
           <a class="btn" href="assets/Rahul_Verma_Resume.pdf" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3 3 3-3"/></svg>Résumé (PDF)</a>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3 3 3-3"/></svg>Résumé</a>
           <a class="btn" href="https://github.com/Rahulverma5" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>GitHub</a>
           <a class="btn" href="https://www.linkedin.com/in/rahul-verma527" target="_blank" rel="noopener">
@@ -403,6 +403,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
               <div><h3>M.Tech, Artificial Intelligence</h3><div class="org"><b>IIT Hyderabad</b> · CGPA 8.8 / 10</div></div>
               <span class="when">2023 to 2025</span>
             </div>
+            <div class="dashcam"><canvas id="gdstrip" aria-hidden="true"></canvas><span class="cap">Illustration · gradient descent</span></div>
             <ul>
               <li>Coursework in data structures and algorithms, machine learning, deep learning and NLP. Course projects on diffusion models, VAEs for fraud detection and knowledge-aware news image captioning (see below).</li>
             </ul>
@@ -854,8 +855,8 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
     var CYCLE = 4.6;
     sectionCanvas('fusion', {
       init: function (s) {
-        var wide = s.w > 860, layers = wide ? [4, 6, 7, 6, 4] : [3, 5, 5, 3];
-        s.nx0 = wide ? s.w * 0.45 : s.w * 0.48; s.nx1 = wide ? s.w * 0.665 : s.w * 0.94;
+        var wide = s.w > 860, layers = wide ? [4, 6, 7, 8, 7, 6, 4] : [3, 5, 5, 3];
+        s.nx0 = wide ? s.w * 0.05 : s.w * 0.48; s.nx1 = wide ? s.w * 0.665 : s.w * 0.94;
         var cy = wide ? s.h * 0.48 : s.h * 0.14, span = wide ? s.h * 0.8 : s.h * 0.2;
         s.nodes = []; s.edges = []; s.pulses = [];
         layers.forEach(function (n, li) { for (var i = 0; i < n; i++) s.nodes.push({ l: li, x: s.nx0 + (s.nx1 - s.nx0) * li / (layers.length - 1), y: cy - span / 2 + span * (i + 0.5) / n, g: 0 }); });
@@ -981,6 +982,62 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
           x.textAlign = 'right'; x.font = '600 13px "JetBrains Mono", monospace'; x.fillStyle = i === 0 ? acc : fg; x.globalAlpha = i === 0 ? 0.65 + 0.35 * (1 - s.flash) : 1; x.fillText(r[1], x0 + panel - 18, ry); x.textAlign = 'left'; x.globalAlpha = 1; });
       } else {
         x.fillStyle = acc; x.font = '600 12px "JetBrains Mono", monospace'; x.textAlign = 'right'; x.fillText('glucose ' + s.est.glu + ' mg/dL', W - 12, 22); x.textAlign = 'left';
+      }
+      x.globalAlpha = 1;
+    }
+  });
+
+  /* IIT Hyderabad card: gradient descent on a loss surface, with the training curve it produces */
+  sectionCanvas('gdstrip', {
+    init: function (s) { s.run = null; },
+    frame: function (s, dt) {
+      var x = s.x, ink = css('--muted'), acc = css('--accent'), trk = css('--track'), fg = css('--ink'), grid = css('--grid');
+      var W = s.w, H = s.h, split = W > 560 ? W * 0.58 : W, cx = split * 0.55, cy = H * 0.48, sx = split * 0.42, sy = H * 0.4;
+      function L(u, v) { return 0.6 * u * u + 2.2 * v * v + 0.15 * Math.sin(3 * u) * Math.cos(2 * v) + 0.4; }
+      function grad(u, v) { return [1.2 * u + 0.45 * Math.cos(3 * u) * Math.cos(2 * v), 4.4 * v - 0.3 * Math.sin(3 * u) * Math.sin(2 * v)]; }
+      if (!s.min) { var best = 1e9; for (var mu0 = -1; mu0 <= 1; mu0 += 0.01) for (var mv0 = -0.5; mv0 <= 0.5; mv0 += 0.01) { var lv0 = L(mu0, mv0); if (lv0 < best) { best = lv0; s.min = [mu0, mv0]; } } }
+      if (!s.run || s.run.done > 1.4) {
+        var a = Math.random() * 6.28; s.run = { u: Math.cos(a) * 1.7, v: Math.sin(a) * 0.75, mu: 0, mv: 0, path: [], loss: [], ep: 0, acc: 0, done: 0 };
+      }
+      var r = s.run;
+      // optimiser step (momentum), ~25 steps per second
+      r.acc += dt;
+      while (r.acc > 0.04 && r.done === 0) {
+        r.acc -= 0.04; var g = grad(r.u, r.v); r.mu = 0.85 * r.mu - 0.035 * g[0]; r.mv = 0.85 * r.mv - 0.035 * g[1]; r.u += r.mu; r.v += r.mv;
+        r.path.push([r.u, r.v]); r.loss.push(L(r.u, r.v)); r.ep++;
+        if (r.ep > 70 || (Math.hypot(r.mu, r.mv) < 0.002 && r.ep > 20)) r.done = 0.001;
+      }
+      if (r.done > 0) r.done += dt;
+      x.clearRect(0, 0, W, H);
+      // contours
+      x.lineWidth = 1;
+      for (var lv = 0.55; lv < 6; lv += 0.55) {
+        x.globalAlpha = 0.18 + 0.25 * (1 - lv / 6); x.strokeStyle = lv < 1.2 ? trk : ink; x.beginPath();
+        for (var k = 0; k <= 90; k++) { var th = k / 90 * 6.283, rr = 0.2, lo = 0, hi = 3;
+          for (var it = 0; it < 18; it++) { rr = (lo + hi) / 2; if (L(rr * Math.cos(th), rr * Math.sin(th)) > lv) hi = rr; else lo = rr; }
+          var px = cx + rr * Math.cos(th) / 2 * sx, py = cy + rr * Math.sin(th) / 1 * sy; k ? x.lineTo(px, py) : x.moveTo(px, py); }
+        x.stroke();
+      }
+      // path
+      var fade = r.done > 0.8 ? Math.max(0, 1 - (r.done - 0.8) / 0.6) : 1;
+      function P(p) { return [cx + p[0] / 2 * sx, cy + p[1] * sy]; }
+      x.globalAlpha = 0.85 * fade; x.strokeStyle = acc; x.lineWidth = 1.8; x.beginPath();
+      r.path.forEach(function (p, i) { var q = P(p); i ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1]); }); x.stroke();
+      if (r.path.length) { var h = P(r.path[r.path.length - 1]); x.globalAlpha = fade; x.fillStyle = acc; x.beginPath(); x.arc(h[0], h[1], 5, 0, 6.283); x.fill(); }
+      var mp = P(s.min); x.globalAlpha = 0.8; x.fillStyle = trk; x.font = '500 10px "JetBrains Mono", monospace'; x.fillText('minimum', mp[0] + 8, mp[1] - 8);
+      x.beginPath(); x.arc(mp[0], mp[1], 2.5, 0, 6.283); x.fill();
+      // training curve panel
+      if (split < W) {
+        var x0 = split + 8, y0 = 12, pw = W - x0 - 12, ph = H - 42;
+        x.globalAlpha = 1; x.fillStyle = css('--surface'); x.fillRect(x0, y0, pw, ph); x.strokeStyle = css('--line'); x.lineWidth = 1; x.strokeRect(x0 + .5, y0 + .5, pw - 1, ph - 1);
+        x.fillStyle = ink; x.font = '500 10px "JetBrains Mono", monospace'; x.fillText('TRAINING LOSS', x0 + 10, y0 + 18);
+        var gx0 = x0 + 10, gy0 = y0 + 30, gw = pw - 20, gh = ph - 62, maxL = r.loss.length ? r.loss[0] * 1.05 : 4.5;
+        x.strokeStyle = grid; x.beginPath(); for (var gl = 0; gl <= 3; gl++) { var yy = gy0 + gh * gl / 3; x.moveTo(gx0, yy + .5); x.lineTo(gx0 + gw, yy + .5); } x.stroke();
+        x.globalAlpha = fade; x.strokeStyle = acc; x.lineWidth = 2; x.beginPath();
+        r.loss.forEach(function (l, i) { var px = gx0 + gw * i / 70, py = gy0 + gh * (1 - Math.min(l, maxL) / maxL); i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
+        var last = r.loss.length ? r.loss[r.loss.length - 1] : 0;
+        x.globalAlpha = 1; x.fillStyle = ink; x.font = '400 11px "IBM Plex Sans", sans-serif'; x.fillText('step ' + r.ep, gx0, y0 + ph - 12);
+        x.textAlign = 'right'; x.fillStyle = fg; x.font = '600 12px "JetBrains Mono", monospace'; x.fillText('loss ' + last.toFixed(3), gx0 + gw, y0 + ph - 12); x.textAlign = 'left';
       }
       x.globalAlpha = 1;
     }
