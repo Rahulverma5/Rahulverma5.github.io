@@ -291,7 +291,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
 </style>
 </head>
 <body>
-<script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('rv-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('rv-theme');document.documentElement.setAttribute('data-theme',t||'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
 
 <header class="top" id="top">
   <div class="wrap">
@@ -854,9 +854,9 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
     var CYCLE = 4.6;
     sectionCanvas('fusion', {
       init: function (s) {
-        var wide = s.w > 860, layers = wide ? [3, 5, 5, 3] : [3, 4, 3];
-        s.nx0 = wide ? s.w * 0.53 : s.w * 0.52; s.nx1 = wide ? s.w * 0.66 : s.w * 0.9;
-        var cy = wide ? s.h * 0.48 : s.h * 0.15, span = wide ? s.h * 0.42 : s.h * 0.17;
+        var wide = s.w > 860, layers = wide ? [4, 6, 7, 6, 4] : [3, 5, 5, 3];
+        s.nx0 = wide ? s.w * 0.45 : s.w * 0.48; s.nx1 = wide ? s.w * 0.665 : s.w * 0.94;
+        var cy = wide ? s.h * 0.48 : s.h * 0.14, span = wide ? s.h * 0.8 : s.h * 0.2;
         s.nodes = []; s.edges = []; s.pulses = [];
         layers.forEach(function (n, li) { for (var i = 0; i < n; i++) s.nodes.push({ l: li, x: s.nx0 + (s.nx1 - s.nx0) * li / (layers.length - 1), y: cy - span / 2 + span * (i + 0.5) / n, g: 0 }); });
         s.L = layers.length;
@@ -897,7 +897,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
         if (mouse.on && Math.random() < 0.3) { var near = s.edges.filter(function (e) { return s.nodes[e[1]].g > 0.3; }); if (near.length) s.pulses.push({ e: near[Math.floor(Math.random() * near.length)], k: 0 }); }
         s.pulses = s.pulses.filter(function (p) { p.k += dt * 2.2; return p.k < 1; });
         s.pulses.forEach(function (p) { var a = s.nodes[p.e[0]], b = s.nodes[p.e[1]]; x.globalAlpha = 0.8 * Math.sin(p.k * Math.PI); x.fillStyle = acc; x.beginPath(); x.arc(a.x + (b.x - a.x) * p.k, a.y + (b.y - a.y) * p.k, 2.2, 0, 6.283); x.fill(); });
-        s.nodes.forEach(function (n) { x.globalAlpha = 0.4 + 0.6 * n.g; x.fillStyle = n.g > 0.3 ? acc : ink; x.beginPath(); x.arc(n.x, n.y, 3.5 + 2.5 * n.g, 0, 6.283); x.fill(); });
+        s.nodes.forEach(function (n) { x.globalAlpha = 0.4 + 0.6 * n.g; x.fillStyle = n.g > 0.3 ? acc : ink; x.beginPath(); x.arc(n.x, n.y, 4.5 + 3 * n.g, 0, 6.283); x.fill(); });
         x.font = '500 10px "JetBrains Mono", monospace'; x.fillStyle = ink; x.globalAlpha = 0.7;
         var bottom = Math.max.apply(null, s.nodes.map(function (n) { return n.y; }));
         x.textAlign = 'center'; x.fillText('encoder', (s.nx0 + s.nx1) / 2, bottom + 24); x.textAlign = 'left';
