@@ -210,6 +210,8 @@ section.block { padding-block: 88px 0; }
 @media (max-width: 860px) { .featured { grid-template-columns: 1fr; } }
 @media (max-width: 420px) { .kv { grid-template-columns: 1fr 1fr; } .proj { padding: 20px; } }
 
+.proj .viz { height: 140px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); overflow: hidden; }
+.proj .viz canvas { width: 100%; height: 100%; display: block; }
 /* More work */
 .more-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin: 56px 0 18px; }
 .more-head h3 { font-size: var(--s-lg); }
@@ -432,6 +434,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
           <div class="proj-top"><span class="badge hot">Retrieval · RAG</span><span class="badge mono">Python</span></div>
           <h3>Blended RAG for contract review</h3>
           <p class="pitch">Finds the exact clause that answers a legal question, on a laptop CPU. A rebuild of IBM's Blended RAG without Elasticsearch: BM25 routes the query to the right contract, then dense (BGE) and sparse (SPLADE++) rankings are fused with reciprocal rank fusion.</p>
+          <div class="viz"><canvas id="ragbg" aria-hidden="true"></canvas></div>
           <div class="bars armed" aria-label="Recall at 64 on LegalBench-RAG mini: ours 81.9 percent, paper baseline 62.2 percent">
             <span class="metric">Recall@64 · LegalBench-RAG mini, 776 questions</span>
             <div class="bar-row ours"><span class="who">This repo</span><span class="bar"><span style="--w:81.9%"></span></span><span class="val">81.9%</span></div>
@@ -452,6 +455,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
           <div class="proj-top"><span class="badge hot">NLP · Classification</span><span class="badge mono">Python</span></div>
           <h3>User intent classifier for video search</h3>
           <p class="pitch">Reads only the query text and decides, in about 4 ms on a CPU, which video index to search: whole-video summaries, clips or keyframes, plus transcript or OCR. Conformal prediction sets make it search more than one index when unsure, instead of guessing.</p>
+          <div class="viz"><canvas id="intentbg" aria-hidden="true"></canvas></div>
           <div class="bars armed" aria-label="Macro F1 on 270 hand-labelled questions: ours 0.682, rules baseline 0.616">
             <span class="metric">Macro-F1 · 270 hand-labelled VideoMME questions</span>
             <div class="bar-row ours"><span class="who">This model</span><span class="bar"><span style="--w:68.2%"></span></span><span class="val">0.682</span></div>
@@ -472,6 +476,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
           <div class="proj-top"><span class="badge">LLM · In progress</span><span class="badge mono">Python</span></div>
           <h3>Qwen3 post-training to production serving</h3>
           <p class="pitch">Fine-tunes Qwen3-1.7B for text-to-SQL on Spider with QLoRA, compresses it four ways (AWQ, GPTQ, W8A8, GGUF), benchmarks vLLM serving on a T4, and deploys behind a gateway to GCP Cloud Run and AWS with Terraform, all on free tiers.</p>
+          <div class="viz"><canvas id="qwenbg" aria-hidden="true"></canvas></div>
           <div class="bars armed" aria-label="Spider dev execution accuracy: after QLoRA 64.6 percent, base 55.9 percent">
             <span class="metric">Spider dev execution accuracy</span>
             <div class="bar-row ours"><span class="who">After QLoRA</span><span class="bar"><span style="--w:64.6%"></span></span><span class="val">64.6%</span></div>
@@ -492,6 +497,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
           <div class="proj-top"><span class="badge">Multimodal · Vision + NLP</span><span class="badge mono">PyTorch</span></div>
           <h3>Knowledge-aware news image captioning</h3>
           <p class="pitch">Writes the caption a news editor would, naming the people and places in the photo. Named entities from the article become knowledge prompts for FLAN-T5; CLIP and BLIP describe what the image shows; GPT-2 writes the caption from the combined multimodal context.</p>
+          <div class="viz"><canvas id="capbg" aria-hidden="true"></canvas></div>
           <div class="pipe" aria-label="Pipeline: article and image, entity knowledge, visual descriptors, caption">
             <span class="metric">Pipeline</span>
             <ol>
@@ -1126,6 +1132,151 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
       x.fillStyle = ink; x.font = '500 11px "JetBrains Mono", monospace';
       x.fillText('fleet rollout · ' + (roll >= 1 ? '100k+ devices' : count + '%'), s.fleetX, y + s.cell * 1.5 + 18);
       var fade = u > CYC - 0.5 ? (CYC - u) / 0.5 : 1; if (fade < 1) { x.globalAlpha = 1 - fade; x.fillStyle = css('--bg'); x.fillRect(0, 0, s.w, s.h); x.globalAlpha = 1; }
+    }
+  });
+
+  /* Blended RAG card background: route to the right contract, then rank its clauses */
+  sectionCanvas('ragbg', {
+    init: function (s) { s.cyc = -1; },
+    frame: function (s) {
+      var x = s.x, W = s.w, ink = css('--muted'), acc = css('--accent'), trk = css('--track'), surf = css('--surface'), line = css('--line');
+      var CYC = 6, u = s.t % CYC, c = Math.floor(s.t / CYC);
+      if (c !== s.cyc) { s.cyc = c; s.pick = Math.floor(Math.random() * 3); s.rank = [2, 5, 8, 11].sort(function () { return Math.random() - 0.5; }).slice(0, 3); }
+      x.clearRect(0, 0, W, s.h);
+      var pw = Math.min(70, W * 0.17), ph = pw * 1.3, gap = 14, x0 = (W - (pw * 3 + gap * 2)) / 2, y0 = 30;
+      var fade = u > CYC - 0.6 ? (CYC - u) / 0.6 : 1;
+      for (var i = 0; i < 3; i++) {
+        var px = x0 + i * (pw + gap), chosen = i === s.pick, routed = u > 1.2;
+        var lift = chosen && routed ? -6 * Math.min(1, (u - 1.2) / 0.4) * fade : 0;
+        x.globalAlpha = routed && !chosen ? 0.35 : 1;
+        x.fillStyle = surf; x.strokeStyle = chosen && routed ? acc : line; x.lineWidth = chosen && routed ? 1.6 : 1.2;
+        x.beginPath(); x.roundRect ? x.roundRect(px, y0 + lift, pw, ph, 5) : x.rect(px, y0 + lift, pw, ph); x.fill(); x.stroke();
+        // title bar + text lines (chunks)
+        x.fillStyle = ink; x.globalAlpha *= 0.9; x.fillRect(px + 8, y0 + lift + 9, pw * 0.5, 4);
+        for (var l = 0; l < 13; l++) {
+          var ly = y0 + lift + 20 + l * ((ph - 28) / 13), lw = (pw - 16) * (l % 4 === 3 ? 0.6 : 0.92), r = chosen ? s.rank.indexOf(l) : -1;
+          var shown = r >= 0 && u > 2.2 + r * 0.45;
+          x.globalAlpha = (routed && !chosen ? 0.35 : 1) * (shown ? 1 : 0.45);
+          x.fillStyle = shown ? (r === 0 ? acc : trk) : ink; x.fillRect(px + 8, ly, lw, shown ? 3.5 : 2);
+          if (shown) { x.globalAlpha = fade; x.font = '600 9px "JetBrains Mono", monospace'; x.fillStyle = r === 0 ? acc : trk; x.fillText('#' + (r + 1), px + pw + 3, ly + 4); }
+        }
+      }
+      x.globalAlpha = 1;
+      // query + routing arrow
+      var qx = x0 + (pw * 3 + gap * 2) / 2, qy = y0 - 18;
+      x.font = '500 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.fillStyle = ink;
+      x.fillText(u < 1.2 ? 'BM25 routing…' : (u < 2.2 ? 'contract found' : 'dense + SPLADE → RRF'), qx, qy);
+      x.textAlign = 'left';
+      if (u > 0.4 && u < 2.2) {
+        var tx = x0 + s.pick * (pw + gap) + pw / 2, k = Math.min(1, (u - 0.4) / 0.7);
+        x.strokeStyle = acc; x.lineWidth = 1.4; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(qx, qy + 5); x.lineTo(qx + (tx - qx) * k, qy + 5 + (y0 - 4 - qy - 5) * k); x.stroke(); x.setLineDash([]);
+      }
+    }
+  });
+
+  /* Intent classifier card background: a query is routed to the right video index */
+  sectionCanvas('intentbg', {
+    init: function (s) { s.cyc = -1; },
+    frame: function (s) {
+      var x = s.x, W = s.w, ink = css('--muted'), acc = css('--accent'), trk = css('--track'), surf = css('--surface'), line = css('--line'), fg = css('--ink');
+      var Q = [['main message of this video?', [0], '0.99'], ['what happened after the red card?', [1], '0.99'], ['text on the sign at the start?', [2], '0.90'], ['colour of the woman’s dress?', [2], '0.94'], ['when does the chef add salt?', [1, 2], 'deep']];
+      var CYC = 5.2, u = s.t % CYC, c = Math.floor(s.t / CYC);
+      if (c !== s.cyc) { s.cyc = c; s.q = Q[c % Q.length]; }
+      x.clearRect(0, 0, W, s.h);
+      var bw = Math.min(84, W * 0.26), bh = 44, gap = 12, total = bw * 3 + gap * 2, x0 = (W - total) / 2, by = 78, fade = u > CYC - 0.5 ? (CYC - u) / 0.5 : 1;
+      // query chip, typed out
+      var text = s.q[0], n = Math.min(text.length, Math.floor(u * 28)), qx = x0, qy = 12;
+      x.font = '500 10.5px "JetBrains Mono", monospace';
+      var tw = Math.min(total, x.measureText(text).width + 22);
+      x.globalAlpha = fade; x.fillStyle = surf; x.strokeStyle = line; x.lineWidth = 1.2;
+      x.beginPath(); x.roundRect ? x.roundRect(qx, qy, tw, 24, 12) : x.rect(qx, qy, tw, 24); x.fill(); x.stroke();
+      x.fillStyle = fg; x.fillText('“' + text.slice(0, n) + (n < text.length ? '▏' : '”'), qx + 9, qy + 16);
+      // classifier tick
+      var decided = u > 1.9;
+      x.fillStyle = ink; x.textAlign = 'center';
+      x.fillText(decided ? (s.q[1].length > 1 ? 'unsure → search 2 indexes' : 'route · 3.9 ms') : (n >= text.length ? 'classifying…' : ''), x0 + total / 2, qy + 46);
+      x.textAlign = 'left';
+      // index boxes
+      ['whole', 'clip', 'frame'].forEach(function (name, i) {
+        var bx = x0 + i * (bw + gap), hit = decided && s.q[1].indexOf(i) >= 0;
+        if (hit) { var k = Math.min(1, (u - 1.9) / 0.5);
+          x.globalAlpha = fade; x.strokeStyle = acc; x.lineWidth = 1.4; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(x0 + total / 2, qy + 52); x.lineTo(x0 + total / 2 + (bx + bw / 2 - x0 - total / 2) * k, qy + 52 + (by - qy - 56) * k); x.stroke(); x.setLineDash([]); }
+        x.globalAlpha = decided && !hit ? 0.4 * fade + (1 - fade) : 1;
+        x.fillStyle = hit ? acc : surf; x.strokeStyle = hit ? acc : line; x.lineWidth = 1.3;
+        x.beginPath(); x.roundRect ? x.roundRect(bx, by, bw, bh, 7) : x.rect(bx, by, bw, bh); x.fill(); x.stroke();
+        // tiny glyphs: film strip / clip / frame
+        x.strokeStyle = hit ? '#fff' : ink; x.lineWidth = 1.2;
+        if (i === 0) { x.strokeRect(bx + bw / 2 - 14, by + 9, 28, 14); }
+        else if (i === 1) { for (var f = 0; f < 3; f++) x.strokeRect(bx + bw / 2 - 16 + f * 11, by + 10, 9, 12); }
+        else { x.strokeRect(bx + bw / 2 - 8, by + 8, 16, 16); x.beginPath(); x.arc(bx + bw / 2 + 2, by + 13, 2, 0, 6.283); x.stroke(); }
+        x.fillStyle = hit ? '#fff' : ink; x.font = '500 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.fillText(name, bx + bw / 2, by + 38); x.textAlign = 'left';
+        if (hit && s.q[2] !== 'deep') { x.fillStyle = acc; x.font = '600 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.fillText(s.q[2], bx + bw / 2, by + bh + 14); x.textAlign = 'left'; }
+      });
+      x.globalAlpha = 1;
+    }
+  });
+
+  function rr(x, a, b, w, h, r) { x.beginPath(); x.roundRect ? x.roundRect(a, b, w, h, r) : x.rect(a, b, w, h); }
+
+  /* Qwen card background: fp16 weights compress to 4-bit, then the served model streams SQL */
+  sectionCanvas('qwenbg', {
+    frame: function (s) {
+      var x = s.x, W = s.w, ink = css('--muted'), acc = css('--accent'), trk = css('--track'), surf = css('--surface'), line = css('--line'), fg = css('--ink');
+      var CYC = 7, u = s.t % CYC, fade = u > CYC - 0.5 ? (CYC - u) / 0.5 : 1;
+      x.clearRect(0, 0, W, s.h); x.globalAlpha = fade;
+      var area = Math.min(300, W - 24), x0 = (W - area) / 2, y0 = 28, n = 6, k = Math.min(1, Math.max(0, (u - 0.8) / 1.2));
+      var cell = 13 - 5 * k, gpad = 2;
+      x.font = '500 10px "JetBrains Mono", monospace'; x.fillStyle = ink; x.fillText(k < 1 ? 'fp16 weights' : 'GGUF Q4_K_M · 3.1× smaller', x0, y0 - 6);
+      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
+        var v = (Math.sin(r * 1.7 + c * 2.3) + 1) / 2, q = k > 0.5 ? Math.round(v * 3) / 3 : v;
+        x.globalAlpha = fade * (0.25 + 0.7 * q); x.fillStyle = k > 0.5 ? acc : trk;
+        x.fillRect(x0 + c * (cell + gpad), y0 + r * (cell + gpad), cell, cell);
+      }
+      x.globalAlpha = fade;
+      // arrow to server
+      var sx = x0 + 110, sy = y0 + 4;
+      if (u > 2.1) { x.strokeStyle = acc; x.lineWidth = 1.4; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(x0 + n * 10 + 6, y0 + 30); x.lineTo(sx - 6, y0 + 30); x.stroke(); x.setLineDash([]); }
+      // server box with streamed tokens
+      var sw = area - 110, on = u > 2.4;
+      x.fillStyle = surf; x.strokeStyle = on ? acc : line; x.lineWidth = 1.3; rr(x, sx, sy, sw, 92, 8); x.fill(); x.stroke();
+      x.fillStyle = ink; x.fillText('vLLM · 8.3 req/s', sx + 8, sy + 15);
+      var sql = ['SELECT name', 'FROM singer', 'WHERE age > 30', 'ORDER BY name;'], chars = on ? Math.floor((u - 2.6) * 18) : 0;
+      x.font = '500 10.5px "JetBrains Mono", monospace';
+      sql.forEach(function (ln, i) { var shown = Math.max(0, Math.min(ln.length, chars - sql.slice(0, i).join('').length)); if (!shown) return;
+        x.fillStyle = i === 0 ? acc : fg; x.fillText(ln.slice(0, shown) + (shown < ln.length ? '▏' : ''), sx + 8, sy + 34 + i * 14); });
+      x.globalAlpha = 1;
+    }
+  });
+
+  /* Captioning card background: visual tags + article entities feed the caption */
+  sectionCanvas('capbg', {
+    frame: function (s) {
+      var x = s.x, W = s.w, ink = css('--muted'), acc = css('--accent'), trk = css('--track'), surf = css('--surface'), line = css('--line'), fg = css('--ink');
+      var CYC = 7, u = s.t % CYC, fade = u > CYC - 0.5 ? (CYC - u) / 0.5 : 1;
+      x.clearRect(0, 0, W, s.h); x.globalAlpha = fade;
+      var area = Math.min(300, W - 24), x0 = (W - area) / 2, y0 = 14, iw = 100, ih = 74;
+      // the news photo (line art)
+      x.fillStyle = surf; x.strokeStyle = line; x.lineWidth = 1.3; rr(x, x0, y0, iw, ih, 6); x.fill(); x.stroke();
+      x.strokeStyle = ink; x.lineWidth = 1.3;
+      x.beginPath(); x.arc(x0 + 42, y0 + 28, 8, 0, 6.283); x.stroke();                       // head
+      x.beginPath(); x.moveTo(x0 + 26, y0 + 70); x.quadraticCurveTo(x0 + 42, y0 + 34, x0 + 58, y0 + 70); x.stroke(); // shoulders
+      x.strokeRect(x0 + 64, y0 + 46, 30, 24);                                                 // podium
+      // CLIP boxes
+      if (u > 0.6) { x.strokeStyle = trk; x.lineWidth = 1.5; x.strokeRect(x0 + 24, y0 + 16, 38, 56); x.strokeRect(x0 + 62, y0 + 44, 34, 28);
+        x.fillStyle = trk; x.font = '500 9px "JetBrains Mono", monospace'; x.fillText('person', x0 + 25, y0 + 13); x.fillText('podium', x0 + 62, y0 + 41); }
+      // article entities
+      var ents = ['Senator', 'Columbia', 'July 18'], ex = x0 + iw + 16;
+      x.font = '500 10px "JetBrains Mono", monospace'; x.fillStyle = ink; x.fillText('article entities', ex, y0 + 4);
+      ents.forEach(function (e, i) { var show = u > 1.2 + i * 0.3; if (!show) return; var w = x.measureText(e).width + 14;
+        x.fillStyle = surf; x.strokeStyle = acc; x.lineWidth = 1.2; rr(x, ex, y0 + 12 + i * 22, w, 18, 9); x.fill(); x.stroke();
+        x.fillStyle = acc; x.fillText(e, ex + 7, y0 + 25 + i * 22); });
+      // caption, typed by the decoder
+      var cap = 'Senator speaks at a rally in Columbia on July 18.', n = u > 2.6 ? Math.floor((u - 2.6) * 22) : 0;
+      x.fillStyle = ink; x.font = '500 10px "JetBrains Mono", monospace'; x.fillText(u > 2.4 ? 'GPT-2 caption' : '', x0, y0 + ih + 20);
+      x.fillStyle = fg; x.font = '500 11px "IBM Plex Sans", sans-serif';
+      var line1 = cap.slice(0, Math.min(n, cap.length));
+      x.fillText(line1 + (n < cap.length && n > 0 ? '▏' : ''), x0, y0 + ih + 36);
+      x.globalAlpha = 1;
     }
   });
 
