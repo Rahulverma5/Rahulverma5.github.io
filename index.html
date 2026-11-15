@@ -88,7 +88,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 /* Hero */
 .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
 #fusion { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 88%, transparent) 42%, color-mix(in srgb, var(--bg) 30%, transparent) 100%); pointer-events: none; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 85%, transparent) 38%, transparent 60%); pointer-events: none; }
 .hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: 48px; align-items: center; padding-block: 72px 56px; }
 .hero-text { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 .hero h1 { font-size: var(--s-hero); font-weight: 800; letter-spacing: -0.045em; line-height: .95; }
@@ -120,7 +120,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   .portrait { order: -1; width: min(100%, 149px); justify-self: start; align-items: flex-start; }
   .monogram { font-size: 4rem; }
     .portrait .caption { font-size: .7rem; padding: 4px 10px; }
-  .hero::after { background: color-mix(in srgb, var(--bg) 80%, transparent); }
+  .hero::after { background: color-mix(in srgb, var(--bg) 55%, transparent); }
 }
 
 /* Load sequence (hero only, starts visible if JS/motion is off) */
@@ -874,7 +874,13 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
       var x = s.x, ink = css('--muted'), acc = css('--accent'), trk = css('--track');
       x.clearRect(0, 0, s.w, s.h);
       if (s.t > s.next || !s.q) {
-        var qx = s.x0 + 40 + Math.random() * (s.w - s.x0 - 170), qy = 30 + Math.random() * (s.h - 60);
+        var ph = document.querySelector('.portrait'), cr = s.c.getBoundingClientRect(), pr0 = ph ? ph.getBoundingClientRect() : null, qx, qy;
+        for (var tries = 0; tries < 30; tries++) {
+          qx = (s.w > 860 ? s.w * 0.58 : s.x0 + 40) + Math.random() * (s.w - (s.w > 860 ? s.w * 0.58 : s.x0 + 40) - 130); qy = 30 + Math.random() * (s.h - 60);
+          if (!pr0) break;
+          var rx = pr0.left - cr.left, ry = pr0.top - cr.top;
+          if (qx < rx - 50 || qx > rx + pr0.width + 30 || qy < ry - 40 || qy > ry + pr0.height + 40) break;
+        }
         var ranked = s.pts.map(function (p, i) { return { i: i, d: Math.hypot(p.x - qx, p.y - qy) }; }).sort(function (a, b) { return a.d - b.d; }).slice(0, 5);
         s.q = { x: qx, y: qy, t0: s.t, top: ranked.map(function (r) { return r.i; }) }; s.next = s.t + 3.4;
       }
