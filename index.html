@@ -91,7 +91,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 85%, transparent) 38%, transparent 60%); pointer-events: none; }
 .hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: 48px; align-items: center; padding-block: 72px 56px; }
 .hero-text { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
-.hero h1 { font-size: var(--s-hero); font-weight: 800; letter-spacing: -0.045em; line-height: .95; }
+.hero h1 { font-size: var(--s-hero); font-weight: 800; letter-spacing: -0.045em; line-height: .95; white-space: nowrap; }
 .hero h1 .last { color: var(--accent); }
 .role { font-family: var(--f-display); font-size: var(--s-xl); font-weight: 500; color: var(--muted); letter-spacing: -0.01em; }
 .role strong { color: var(--ink); font-weight: 700; }
@@ -316,7 +316,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
     <div class="wrap">
       <div class="hero-text">
         <span class="eyebrow rise" style="--d:0">Machine Learning · Data Scientist</span>
-        <h1 class="rise" style="--d:1">Rahul<br><span class="last">Verma</span></h1>
+        <h1 class="rise" style="--d:1">Rahul <span class="last">Verma</span></h1>
         <p class="role rise" style="--d:2">Data Scientist at <strong>Netradyne</strong></p>
         <div class="rotator rise" style="--d:3" aria-live="off"><span class="label">I work on</span><span class="word" id="rotWord">on-device computer vision</span></div>
         <p class="lede rise" style="--d:4">I build ML systems that hold up in production. My vision models run on <b>100,000+ fleet devices</b> across the US, UK and Canada.<br>I also build LLM systems end to end, from <b>hybrid RAG pipelines</b> to <b>LLM fine-tuning, quantization and production serving</b>.</p>
