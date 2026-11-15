@@ -105,18 +105,18 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .chip { font-family: var(--f-mono); font-size: var(--s-xs); padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); white-space: nowrap; }
 .chip b { color: var(--ink); font-weight: 500; }
 
-.portrait { position: relative; justify-self: center; width: min(100%, 320px); aspect-ratio: 4 / 5; max-width: 100%; }
+.portrait { position: relative; justify-self: center; width: min(100%, 224px); aspect-ratio: 4 / 5; max-width: 100%; }
 .portrait .frame { position: absolute; inset: 0; border-radius: 22px; overflow: hidden; background: linear-gradient(160deg, var(--surface), var(--accent-soft)); border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; place-items: center; }
 .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
 .monogram { font-family: var(--f-display); font-weight: 800; font-size: 6rem; color: var(--ink); opacity: .9; letter-spacing: -0.05em; }
 .bbox { position: absolute; inset: 11% 24% 42% 24%; pointer-events: none; }
-.bbox i { position: absolute; width: 26px; height: 26px; border: 2.5px solid var(--accent); }
+.bbox i { position: absolute; width: 18px; height: 18px; border: 2.5px solid var(--accent); }
 .bbox i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 .bbox i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
 .bbox i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
 .bbox i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
 .bbox .tag { position: absolute; top: -26px; left: 0; font-family: var(--f-mono); font-size: .72rem; background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 4px 4px 4px 0; white-space: nowrap; }
-.portrait .caption { position: absolute; left: 14px; right: 14px; bottom: 14px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--surface) 90%, transparent); backdrop-filter: blur(6px); border: 1px solid var(--line); font-size: var(--s-xs); font-family: var(--f-mono); color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.portrait .caption { position: absolute; left: 10px; right: 10px; bottom: 10px; padding: 8px 10px; border-radius: 12px; background: color-mix(in srgb, var(--surface) 90%, transparent); backdrop-filter: blur(6px); border: 1px solid var(--line); font-size: var(--s-xs); font-family: var(--f-mono); color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
 .portrait .caption b { color: var(--ink); font-weight: 500; }
 .dot-live { width: 8px; height: 8px; border-radius: 50%; background: #1fae5b; display: inline-block; margin-right: 6px; box-shadow: 0 0 0 0 rgba(31,174,91,.6); animation: pulse 2s infinite; }
 @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(31,174,91,0); } 100% { box-shadow: 0 0 0 0 rgba(31,174,91,0); } }
@@ -124,11 +124,10 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 
 @media (max-width: 860px) {
   .hero .wrap { grid-template-columns: 1fr; gap: 36px; padding-block: 48px 40px; }
-  .portrait { order: -1; width: min(100%, 220px); justify-self: start; }
+  .portrait { order: -1; width: min(100%, 154px); justify-self: start; }
   .monogram { font-size: 4rem; }
-  .portrait .caption { left: 10px; right: 10px; bottom: 10px; padding: 7px 10px; }
-  .portrait .caption > span:last-child { display: none; }
-  .bbox .tag { font-size: .62rem; top: -21px; }
+    .portrait .caption { font-size: .66rem; left: 8px; right: 8px; bottom: 8px; padding: 5px 8px; }
+  .bbox .tag { font-size: .58rem; top: -19px; left: 50%; transform: translateX(-50%); }
   .hero::after { background: color-mix(in srgb, var(--bg) 80%, transparent); }
 }
 
@@ -346,7 +345,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
           <span class="monogram" id="mono" hidden>RV</span>
         </div>
         <div class="bbox"><span class="tag">data_scientist · 0.99</span><i></i><i></i><i></i><i></i></div>
-        <div class="caption"><span><span class="dot-live"></span><b>Bengaluru, India</b></span><span>IST · UTC+5:30</span></div>
+        <div class="caption"><span><span class="dot-live"></span><b>Bengaluru, India</b></span></div>
       </div>
     </div>
   </div>
