@@ -98,7 +98,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .rotator { font-family: var(--f-mono); font-size: var(--s-sm); color: var(--ink); display: flex; align-items: center; gap: 10px; min-height: 1.6em; flex-wrap: wrap; }
 .rotator .label { color: var(--muted); }
 .rotator .word { border-right: 2px solid var(--accent); padding-right: 3px; white-space: nowrap; }
-.lede { font-size: 1.12rem; color: var(--muted); max-width: 58ch; }
+.lede { font-size: 1.12rem; color: var(--muted); max-width: 66ch; }
 .lede b { color: var(--ink); font-weight: 600; }
 .cta { display: flex; flex-wrap: wrap; gap: 10px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -200,6 +200,15 @@ section.block { padding-block: 88px 0; }
 .js .bars.armed .bar span { transform: scaleX(0); }
 .bars.go .bar span { transform: scaleX(1); transition: transform 1.1s cubic-bezier(.2,.7,.2,1); }
 .bars.go .bar-row.ours .bar span { transition-delay: .25s; }
+.pipe { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line); }
+.pipe .metric { font-family: var(--f-mono); font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.pipe ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.pipe li { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); min-width: 0; }
+.pipe li + li::before { content: "→"; position: absolute; left: -15px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: .8rem; }
+.pipe li b { font-size: .8rem; font-weight: 600; }
+.pipe li span { font-family: var(--f-mono); font-size: .68rem; color: var(--muted); }
+.pipe li.out { border-color: var(--accent); background: var(--accent-soft); }
+@media (max-width: 480px) { .pipe ol { grid-template-columns: 1fr 1fr; } .pipe li:nth-child(3)::before { display: none; } }
 .kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .kv div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .kv b { font-family: var(--f-display); font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
@@ -315,7 +324,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
         <h1 class="rise" style="--d:1">Rahul<br><span class="last">Verma</span></h1>
         <p class="role rise" style="--d:2">Research Scientist at <strong>Netradyne</strong></p>
         <div class="rotator rise" style="--d:3" aria-live="off"><span class="label">I work on</span><span class="word" id="rotWord">on-device computer vision</span></div>
-        <p class="lede rise" style="--d:4">I build ML systems that hold up in production. My vision models run on <b>100,000+ fleet devices</b> across the US, UK and Canada. Before that I designed <b>GlucoNet</b>, a non-invasive blood-glucose model published at <b>IEEE EMBC 2025</b>.</p>
+        <p class="lede rise" style="--d:4">I build ML systems that hold up in production. My vision models run on <b>100,000+ fleet devices</b> across the US, UK and Canada.<br>I also build LLM systems: <b>hybrid RAG retrieval</b> (81.9% recall vs. a 62.2% baseline) and <b>Qwen3 fine-tuning, quantization and vLLM serving</b>.</p>
         <div class="cta rise" style="--d:5">
           <a class="btn primary" href="#contact">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Get in touch</a>
@@ -421,7 +430,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
 
       <div class="featured">
         <article class="proj">
-          <div class="proj-top"><span class="badge hot">Aintropy · Retrieval</span><span class="badge mono">Python</span></div>
+          <div class="proj-top"><span class="badge hot">Retrieval · RAG</span><span class="badge mono">Python</span></div>
           <h3>Blended RAG for contract review</h3>
           <p class="pitch">Finds the exact clause that answers a legal question, on a laptop CPU. A rebuild of IBM's Blended RAG without Elasticsearch: BM25 routes the query to the right contract, then dense (BGE) and sparse (SPLADE++) rankings are fused with reciprocal rank fusion.</p>
           <div class="bars armed" aria-label="Recall at 64 on LegalBench-RAG mini: ours 81.9 percent, paper baseline 62.2 percent">
@@ -441,7 +450,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
         </article>
 
         <article class="proj">
-          <div class="proj-top"><span class="badge hot">Aintropy · Classification</span><span class="badge mono">Python</span></div>
+          <div class="proj-top"><span class="badge hot">NLP · Classification</span><span class="badge mono">Python</span></div>
           <h3>User intent classifier for video search</h3>
           <p class="pitch">Reads only the query text and decides, in about 4 ms on a CPU, which video index to search: whole-video summaries, clips or keyframes, plus transcript or OCR. Conformal prediction sets make it search more than one index when unsure, instead of guessing.</p>
           <div class="bars armed" aria-label="Macro F1 on 270 hand-labelled questions: ours 0.682, rules baseline 0.616">
@@ -481,22 +490,26 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
         </article>
 
         <article class="proj">
-          <div class="proj-top"><span class="badge">GenAI · Deployed</span><span class="badge mono">Python</span></div>
-          <h3>PDF Assistant: summarize and chat</h3>
-          <p class="pitch">A local RAG system over research papers, manuals and coursework, built with Ollama, FAISS and LangChain. Upload up to five PDFs at once and ask questions in real time. Deployed for internal academic use at IIT Hyderabad.</p>
-          <div class="bars armed" aria-label="Relative time to find an answer: manual reading 100 percent, with the assistant about 40 percent">
-            <span class="metric">Time to find an answer · relative to manual reading</span>
-            <div class="bar-row"><span class="who">Manual</span><span class="bar"><span style="--w:100%"></span></span><span class="val">100%</span></div>
-            <div class="bar-row ours"><span class="who">Assistant</span><span class="bar"><span style="--w:40%"></span></span><span class="val">~40%</span></div>
+          <div class="proj-top"><span class="badge">Multimodal · Vision + NLP</span><span class="badge mono">PyTorch</span></div>
+          <h3>Knowledge-aware news image captioning</h3>
+          <p class="pitch">Writes the caption a news editor would, naming the people and places in the photo. Named entities from the article become knowledge prompts for FLAN-T5; CLIP and BLIP describe what the image shows; GPT-2 writes the caption from the combined multimodal context.</p>
+          <div class="pipe" aria-label="Pipeline: article and image, entity knowledge, visual descriptors, caption">
+            <span class="metric">Pipeline</span>
+            <ol>
+              <li><b>Article + image</b><span>NYT, 1999–2019</span></li>
+              <li><b>Entity knowledge</b><span>NER → FLAN-T5</span></li>
+              <li><b>Visual context</b><span>CLIP top-5 · BLIP</span></li>
+              <li class="out"><b>Caption</b><span>GPT-2 decoder</span></li>
+            </ol>
           </div>
           <div class="kv">
-            <div><b>&lt; 6 s</b><span>average response per query</span></div>
-            <div><b>30+</b><span>students and researchers used it</span></div>
-            <div><b>Local</b><span>open models via Ollama, no API key</span></div>
+            <div><b>50k</b><span>image–article–caption triples from the NYT API</span></div>
+            <div><b>4 models</b><span>FLAN-T5, CLIP, BLIP and GPT-2 chained</span></div>
+            <div><b>BLEU · METEOR</b><span>caption quality vs. the editor's caption</span></div>
           </div>
-          <div class="tags"><span class="tag">RAG</span><span class="tag">Ollama</span><span class="tag">FAISS</span><span class="tag">LangChain</span><span class="tag">Streamlit</span></div>
+          <div class="tags"><span class="tag">CLIP</span><span class="tag">BLIP</span><span class="tag">FLAN-T5</span><span class="tag">GPT-2</span><span class="tag">spaCy NER</span><span class="tag">NLTK</span></div>
           <div class="proj-foot">
-            <a class="link-arrow" href="https://github.com/Rahulverma5/iith-pdf-assistant-summerize-and-chat" target="_blank" rel="noopener">View repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+            <a class="link-arrow" href="https://github.com/Rahulverma5/iith-news-image-caption-generation" target="_blank" rel="noopener">View repository <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
           </div>
         </article>
       </div>
@@ -516,10 +529,10 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
           <span class="kind">Generative</span><h4>Diffusion model from scratch</h4>
           <p>Forward noising, a U-Net denoiser and the sampling loop written by hand in TensorFlow, trained on MNIST.</p>
           <div class="tags"><span class="tag">TensorFlow</span><span class="tag">U-Net</span><span class="tag">DDPM</span></div></a>
-        <a class="mini" data-k="gen" href="https://github.com/Rahulverma5/iith-news-image-caption-generation" target="_blank" rel="noopener">
-          <span class="kind">Multimodal</span><h4>Knowledge-aware news image captions</h4>
-          <p>Captions news photos using named entities from the article, knowledge prompts, and CLIP and BLIP visual descriptors. Scored with BLEU.</p>
-          <div class="tags"><span class="tag">CLIP</span><span class="tag">BLIP</span><span class="tag">NER</span></div></a>
+        <a class="mini" data-k="llm" href="https://github.com/Rahulverma5/iith-pdf-assistant-summerize-and-chat" target="_blank" rel="noopener">
+          <span class="kind">RAG</span><h4>PDF Assistant: summarize and chat</h4>
+          <p>Local RAG over up to five PDFs with Ollama, FAISS and LangChain. Answers in under 6 s; used by 30+ people at IIT Hyderabad.</p>
+          <div class="tags"><span class="tag">Ollama</span><span class="tag">FAISS</span><span class="tag">LangChain</span></div></a>
         <a class="mini" data-k="ml" href="https://github.com/Rahulverma5/Fraud-detection-using-VAEs" target="_blank" rel="noopener">
           <span class="kind">Anomaly detection</span><h4>Fraud detection with VAEs</h4>
           <p>Autoencoder and variational autoencoder trained on normal card transactions; fraud flagged by reconstruction error, judged on precision-recall.</p>
@@ -722,7 +735,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
     b.addEventListener('click', function () {
       btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
       [].forEach.call(document.querySelectorAll('.mini'), function (m) {
-        var show = b.dataset.f === 'all' || m.dataset.k === b.dataset.f || (b.dataset.f === 'gen' && m.querySelector('.kind').textContent === 'Multimodal');
+        var show = b.dataset.f === 'all' || m.dataset.k === b.dataset.f;
         m.classList.toggle('fade-out', !show);
       });
     });
