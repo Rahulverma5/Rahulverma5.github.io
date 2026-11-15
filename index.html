@@ -259,6 +259,16 @@ section.block { padding-block: 88px 0; }
 .skill-group .tag { font-size: .78rem; color: var(--ink); background: var(--bg); }
 .skill-group .tag.core { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
 
+/* Section animations */
+.sec-band { position: relative; margin-bottom: 36px; }
+.sec-band .sec-head { position: relative; margin-bottom: 0; }
+#retrieval { position: absolute; left: 0; right: 0; top: -40px; width: 100%; height: calc(100% + 80px); display: block; pointer-events: none; }
+@media (max-width: 860px) { #retrieval { opacity: .45; } }
+.contact { position: relative; overflow: hidden; }
+#neural { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: .8; }
+.contact-card { position: relative; }
+@media (max-width: 860px) { #neural { opacity: .4; } }
+
 /* Contact */
 .contact { margin-block: 96px 0; padding-block: 64px; border-top: 1px solid var(--line); }
 .contact-card { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 32px; align-items: center; }
@@ -407,10 +417,13 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
   <!-- PROJECTS -->
   <section class="block" id="projects">
     <div class="wrap">
+      <div class="sec-band">
+        <canvas id="retrieval" aria-hidden="true"></canvas>
       <div class="sec-head">
         <span class="eyebrow">Projects</span>
         <h2>What I build outside the day job</h2>
         <p>Each project is measured against a baseline, with the evaluation and the code in the repository. The bars are drawn to scale.</p>
+      </div>
       </div>
 
       <div class="featured">
@@ -609,6 +622,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
 
   <!-- CONTACT -->
   <section class="contact" id="contact">
+    <canvas id="neural" aria-hidden="true"></canvas>
     <div class="wrap contact-card">
       <div>
         <span class="eyebrow">Contact</span>
@@ -836,6 +850,100 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
   function loop(ts) { var dt = prev ? Math.min((ts - prev) / 1000, 0.05) : 0; prev = ts; t += dt; frame(dt); requestAnimationFrame(loop); }
   size(); addEventListener('resize', function () { size(); if (reduce) { frame(0); } drawPPG(); });
   if (reduce) { frame(0); } else requestAnimationFrame(loop);
+
+  /* Shared: run a canvas animation only while it is on screen */
+  function sectionCanvas(id, draw) {
+    var c = document.getElementById(id); if (!c) return;
+    var x = c.getContext('2d'), st = { w: 0, h: 0, t: 0, on: true, c: c, x: x };
+    function size() { var d = Math.min(2, devicePixelRatio || 1); st.w = c.clientWidth; st.h = c.clientHeight; c.width = st.w * d; c.height = st.h * d; x.setTransform(d, 0, 0, d, 0, 0); if (st.init) st.init(st); }
+    st.init = draw.init; size(); addEventListener('resize', size);
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { st.on = es[0].isIntersecting; }).observe(c);
+    if (reduce) { st.t = 3.2; draw.frame(st, 0); return; }
+    var prev = 0;
+    (function loop(ts) { var dt = prev ? Math.min((ts - prev) / 1000, 0.05) : 0; prev = ts; if (st.on) { st.t += dt; draw.frame(st, dt); } requestAnimationFrame(loop); })(0);
+  }
+
+  /* #2 Retrieval: document chunks as points; a query lights up its top-5 neighbours */
+  sectionCanvas('retrieval', {
+    init: function (s) {
+      var n = s.w > 860 ? 90 : 45, x0 = s.w > 860 ? s.w * 0.5 : 0;
+      s.pts = []; for (var i = 0; i < n; i++) s.pts.push({ x: x0 + Math.random() * (s.w - x0), y: Math.random() * s.h, p: Math.random() * 6.28 });
+      s.q = null; s.next = 0.6; s.x0 = x0;
+    },
+    frame: function (s, dt) {
+      var x = s.x, ink = css('--muted'), acc = css('--accent'), trk = css('--track');
+      x.clearRect(0, 0, s.w, s.h);
+      if (s.t > s.next || !s.q) {
+        var qx = s.x0 + 40 + Math.random() * (s.w - s.x0 - 80), qy = 30 + Math.random() * (s.h - 60);
+        var ranked = s.pts.map(function (p, i) { return { i: i, d: Math.hypot(p.x - qx, p.y - qy) }; }).sort(function (a, b) { return a.d - b.d; }).slice(0, 5);
+        s.q = { x: qx, y: qy, t0: s.t, top: ranked.map(function (r) { return r.i; }) }; s.next = s.t + 3.4;
+      }
+      var age = s.t - s.q.t0, fade = age < 2.6 ? 1 : Math.max(0, 1 - (age - 2.6) / 0.7);
+      s.pts.forEach(function (p, i) {
+        var dx = Math.sin(s.t * 0.3 + p.p) * 3, dy = Math.cos(s.t * 0.25 + p.p) * 3, hit = s.q.top.indexOf(i);
+        var px = p.x + dx, py = p.y + dy;
+        if (hit >= 0) {
+          var k = Math.min(1, Math.max(0, (age - 0.3 - hit * 0.12) / 0.45));
+          x.globalAlpha = 0.7 * k * fade; x.strokeStyle = trk; x.lineWidth = 1.4; x.beginPath(); x.moveTo(s.q.x, s.q.y);
+          x.lineTo(s.q.x + (px - s.q.x) * k, s.q.y + (py - s.q.y) * k); x.stroke();
+          x.globalAlpha = 0.35 + 0.65 * k * fade; x.fillStyle = trk; x.beginPath(); x.arc(px, py, 3.2 + 1.5 * k * fade, 0, 6.283); x.fill();
+          if (k >= 1 && fade > 0.3) { x.globalAlpha = 0.8 * fade; x.font = '500 10px "JetBrains Mono", monospace'; x.fillStyle = ink; x.fillText('#' + (hit + 1), px + 7, py + 3); }
+        } else { x.globalAlpha = 0.3; x.fillStyle = ink; x.beginPath(); x.arc(px, py, 2.2, 0, 6.283); x.fill(); }
+      });
+      // the query
+      var pr = (age % 1.2) / 1.2;
+      x.globalAlpha = (1 - pr) * 0.5 * fade; x.strokeStyle = acc; x.lineWidth = 1.5; x.beginPath(); x.arc(s.q.x, s.q.y, 6 + pr * 22, 0, 6.283); x.stroke();
+      x.globalAlpha = fade; x.fillStyle = acc; x.beginPath(); x.arc(s.q.x, s.q.y, 5, 0, 6.283); x.fill();
+      x.font = '500 11px "JetBrains Mono", monospace'; x.fillText('query → top-5', s.q.x + 10, s.q.y - 10);
+      x.globalAlpha = 1;
+    }
+  });
+
+  /* #3 Neural network: signals flow toward the cursor */
+  (function () {
+    var host = document.getElementById('contact'), mouse = { x: -1, y: -1, active: false };
+    if (host) {
+      host.addEventListener('pointermove', function (e) { var r = host.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.active = true; });
+      host.addEventListener('pointerleave', function () { mouse.active = false; });
+    }
+    sectionCanvas('neural', {
+      init: function (s) {
+        var layers = s.w > 860 ? [5, 8, 8, 6, 3] : [4, 6, 6, 3], L = layers.length;
+        s.nodes = []; s.edges = []; s.pulses = []; s.spawn = 0;
+        layers.forEach(function (n, li) {
+          for (var i = 0; i < n; i++) s.nodes.push({ l: li, bx: s.w * (0.08 + 0.84 * li / (L - 1)), by: s.h * (0.15 + 0.7 * (i + 0.5) / n), x: 0, y: 0, g: 0 });
+        });
+        s.nodes.forEach(function (a, ai) { s.nodes.forEach(function (b, bi) { if (b.l === a.l + 1) s.edges.push([ai, bi]); }); });
+      },
+      frame: function (s, dt) {
+        var x = s.x, ink = css('--muted'), acc = css('--accent'), trk = css('--track');
+        var mx = mouse.active ? mouse.x : s.w * (0.5 + 0.35 * Math.sin(s.t * 0.4)), my = mouse.active ? mouse.y : s.h * (0.5 + 0.3 * Math.cos(s.t * 0.55));
+        x.clearRect(0, 0, s.w, s.h);
+        s.nodes.forEach(function (n) {
+          var d = Math.hypot(n.bx - mx, n.by - my), pull = Math.max(0, 1 - d / 260);
+          n.x = n.bx + (mx - n.bx) * pull * 0.08; n.y = n.by + (my - n.by) * pull * 0.08;
+          n.g += ((pull) - n.g) * Math.min(1, dt * 6);
+        });
+        x.lineWidth = 1;
+        s.edges.forEach(function (e) { var a = s.nodes[e[0]], b = s.nodes[e[1]]; x.globalAlpha = 0.07 + 0.25 * Math.min(a.g, b.g); x.strokeStyle = (a.g > 0.2 && b.g > 0.2) ? trk : ink; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); });
+        // spawn pulses on edges near the cursor (or anywhere, more slowly)
+        s.spawn -= dt;
+        if (s.spawn <= 0) {
+          s.spawn = 0.06;
+          var cands = s.edges.filter(function (e) { return s.nodes[e[1]].g > 0.15 || Math.random() < 0.04; });
+          if (cands.length) s.pulses.push({ e: cands[Math.floor(Math.random() * cands.length)], k: 0, v: 0.9 + Math.random() * 0.8 });
+        }
+        s.pulses = s.pulses.filter(function (p) { p.k += dt * p.v; return p.k < 1; });
+        s.pulses.forEach(function (p) { var a = s.nodes[p.e[0]], b = s.nodes[p.e[1]], px = a.x + (b.x - a.x) * p.k, py = a.y + (b.y - a.y) * p.k;
+          x.globalAlpha = 0.75 * Math.sin(p.k * Math.PI); x.fillStyle = acc; x.beginPath(); x.arc(px, py, 2.4, 0, 6.283); x.fill(); });
+        s.nodes.forEach(function (n) {
+          x.globalAlpha = 0.35 + 0.6 * n.g; x.fillStyle = n.g > 0.2 ? acc : ink; x.beginPath(); x.arc(n.x, n.y, 3.5 + 3 * n.g, 0, 6.283); x.fill();
+          if (n.g > 0.3) { x.globalAlpha = 0.25 * n.g; x.strokeStyle = acc; x.beginPath(); x.arc(n.x, n.y, 10 + 6 * n.g, 0, 6.283); x.stroke(); }
+        });
+        x.globalAlpha = 1;
+      }
+    });
+  })();
 
   /* PPG waveform (static, theme-aware) */
   function drawPPG() {
