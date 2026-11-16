@@ -995,15 +995,36 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
       if (onSensor) { x.globalAlpha = 0.18 * pulse; x.beginPath(); x.arc(dcx, baseY - 6, 26, 0, 6.283); x.fill(); }
       x.globalAlpha = 0.8; x.fillStyle = ink; x.font = '500 9px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.fillText('PPG SENSOR', dcx, baseY + 21); x.textAlign = 'left';
       // finger: lies horizontally from the left, lowered from a tilted, raised pose onto the sensor
-      var fw = Math.min(24, dev * 0.19), tipX = dcx + padW * 0.28, len = tipX + 12;
-      var restY = baseY - fw / 2 - 1, ang = -(1 - ease) * 0.42, py0 = restY - (1 - ease) * 34;
-      x.save(); x.translate(-12, py0); x.rotate(ang);
-      x.globalAlpha = 1; x.fillStyle = surf; x.strokeStyle = fg; x.lineWidth = 1.6;
-      x.beginPath(); x.moveTo(0, -fw / 2); x.lineTo(len - fw / 2, -fw / 2); x.arc(len - fw / 2, 0, fw / 2, -Math.PI / 2, Math.PI / 2); x.lineTo(0, fw / 2); x.fill(); x.stroke();
-      x.globalAlpha = 0.65; x.strokeStyle = ink; x.lineWidth = 1;
-      x.beginPath(); x.moveTo(len - fw * 1.15, -fw / 2 + 2.5); x.lineTo(len - fw * 0.45, -fw / 2 + 2.5); x.arc(len - fw * 0.45, -fw / 2 + 5.5, 3, -Math.PI / 2, Math.PI / 2); x.lineTo(len - fw * 1.15, -fw / 2 + 8.5); x.stroke();
-      x.beginPath(); x.moveTo(len - fw * 2.2, -fw * 0.3); x.lineTo(len - fw * 2.2, fw * 0.3); x.moveTo(len - fw * 2.45, -fw * 0.25); x.lineTo(len - fw * 2.45, fw * 0.25); x.stroke();
-      x.restore(); x.globalAlpha = 1;
+      var fw = Math.min(26, dev * 0.21), len = dcx + fw * 0.7;
+      var restY = baseY - fw * 0.56 - 1, ang = -(1 - ease) * 0.42, py0 = restY - (1 - ease) * 34;
+      x.save(); x.translate(-14, py0); x.rotate(ang);
+      var L = len + 14, j = L - fw * 1.9;                     // j: last joint (DIP)
+      x.globalAlpha = 1; x.fillStyle = surf; x.strokeStyle = fg; x.lineWidth = 1.6; x.lineJoin = 'round';
+      x.beginPath();
+      x.moveTo(0, -fw * 0.64);
+      x.bezierCurveTo(L * 0.25, -fw * 0.66, L * 0.42, -fw * 0.58, j - fw * 0.6, -fw * 0.56);    // back of finger, middle knuckle
+      x.bezierCurveTo(j - fw * 0.2, -fw * 0.55, j + fw * 0.1, -fw * 0.47, j + fw * 0.45, -fw * 0.49); // dip at the joint
+      x.bezierCurveTo(L - fw * 0.6, -fw * 0.52, L - fw * 0.05, -fw * 0.4, L, -fw * 0.05);       // over the nail to the tip
+      x.bezierCurveTo(L + fw * 0.04, fw * 0.3, L - fw * 0.25, fw * 0.58, L - fw * 0.7, fw * 0.57); // round fingertip into the pad
+      x.bezierCurveTo(L - fw * 1.2, fw * 0.56, j + fw * 0.2, fw * 0.5, j, fw * 0.44);           // pad up to the crease
+      var mid = j * 0.5;
+      x.bezierCurveTo(j - (j - mid) * 0.35, fw * 0.52, mid + (j - mid) * 0.35, fw * 0.6, mid, fw * 0.6);   // middle phalanx pad
+      x.bezierCurveTo(mid * 0.6, fw * 0.6, mid * 0.25, fw * 0.66, 0, fw * 0.68);                         // widening toward the hand
+      x.closePath(); x.fill(); x.stroke();
+      // nail with cuticle
+      x.globalAlpha = 0.9; x.strokeStyle = ink; x.lineWidth = 1.1; x.fillStyle = css('--bg');
+      x.beginPath();
+      x.moveTo(L - fw * 1.12, -fw * 0.42);
+      x.bezierCurveTo(L - fw * 0.75, -fw * 0.5, L - fw * 0.3, -fw * 0.46, L - fw * 0.12, -fw * 0.3);
+      x.bezierCurveTo(L - fw * 0.35, -fw * 0.2, L - fw * 0.8, -fw * 0.18, L - fw * 1.12, -fw * 0.22);
+      x.quadraticCurveTo(L - fw * 1.2, -fw * 0.32, L - fw * 1.12, -fw * 0.42);
+      x.fill(); x.stroke();
+      // joint wrinkles and pad crease
+      x.globalAlpha = 0.55; x.lineWidth = 1;
+      [-0.12, 0, 0.12].forEach(function (o) { x.beginPath(); x.moveTo(j + o * fw - fw * 0.05, -fw * 0.46); x.quadraticCurveTo(j + o * fw + fw * 0.06, -fw * 0.3, j + o * fw, -fw * 0.16); x.stroke(); });
+      x.beginPath(); x.moveTo(j - fw * 0.02, fw * 0.44); x.quadraticCurveTo(j + fw * 0.1, fw * 0.3, j + fw * 0.04, fw * 0.18); x.stroke();
+      [0, 0.14].forEach(function (o) { var kx = j * 0.42 + o * fw; x.beginPath(); x.moveTo(kx, -fw * 0.6); x.quadraticCurveTo(kx + fw * 0.08, -fw * 0.42, kx, -fw * 0.28); x.stroke(); });
+      x.restore(); x.globalAlpha = 1; x.lineJoin = 'miter';
 
       // ---- signal sweep ----
       var t0x = dev + 18, tw = W - panel - t0x - 12, pxs = Math.max(70, tw / 6.5), top = wide ? 22 : 50, base = H - 40, amp = (base - top) * 0.8;
