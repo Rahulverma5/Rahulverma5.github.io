@@ -798,6 +798,7 @@ main, footer { position: relative; z-index: 0; }
     size(); addEventListener('resize', size);
     function frame() {
       var acc = css('--accent'), ink = css('--muted'), R = 240, moving = false;
+      var still = performance.now() - lastT, life = active ? Math.max(0, 1 - Math.max(0, still - 350) / 700) : 0;
       x.clearRect(0, 0, W, H);
       vx *= 0.9; vy *= 0.9;
       for (var i = 0; i < cells.length; i++) {
@@ -809,7 +810,8 @@ main, footer { position: relative; z-index: 0; }
         c.ax += (tx - c.ax) * 0.16; c.ay += (ty - c.ay) * 0.16;
         var m = Math.sqrt(c.ax * c.ax + c.ay * c.ay);
         if (m > 0.05) moving = true;
-        var len = Math.min(18, 5 + m), a = Math.min(0.36, far * far * 0.42) * Math.min(1, m / 2);
+        var clear = Math.min(1, Math.max(0, (dist - 70) / 110)); clear = clear * clear * (3 - 2 * clear);
+        var len = Math.min(18, 5 + m), a = Math.min(0.36, far * far * 0.42) * Math.min(1, m / 2) * clear * life;
         if (m < 0.3 || a < 0.02) continue;
         var ux = c.ax / m, uy = c.ay / m, ex = c.x + ux * len / 2, ey = c.y + uy * len / 2, sx = c.x - ux * len / 2, sy = c.y - uy * len / 2;
         x.globalAlpha = a; x.strokeStyle = near > 0.05 ? acc : ink; x.fillStyle = x.strokeStyle; x.lineWidth = 1.3;
@@ -817,7 +819,7 @@ main, footer { position: relative; z-index: 0; }
         var hs = 3 + len * 0.12; x.beginPath(); x.moveTo(ex, ey); x.lineTo(ex - ux * hs - uy * hs * 0.6, ey - uy * hs + ux * hs * 0.6); x.lineTo(ex - ux * hs + uy * hs * 0.6, ey - uy * hs - ux * hs * 0.6); x.closePath(); x.fill();
       }
       x.globalAlpha = 1;
-      raf = (moving || Math.abs(vx) + Math.abs(vy) > 0.05) ? requestAnimationFrame(frame) : 0;
+      raf = ((moving && life > 0) || Math.abs(vx) + Math.abs(vy) > 0.05) ? requestAnimationFrame(frame) : 0;
     }
     function kick() { if (!raf) raf = requestAnimationFrame(frame); }
     var magnet = null, tilt = null, SPOT = '.job-card, .impact, .paper, .edu, .skills, .link-row, .mini';
