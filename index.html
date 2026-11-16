@@ -25,6 +25,14 @@
   --accent-soft: #fbe6dc;
   --track: #0a7c9c;
   --grid: rgba(15, 26, 43, 0.06);
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --glass-edge: rgba(255, 255, 255, 0.9);
+  --gloss: rgba(255, 255, 255, 0.85);
+  --sheen: rgba(255, 255, 255, 0.55);
+  --blob1: rgba(210, 74, 18, 0.14);
+  --blob2: rgba(10, 124, 156, 0.14);
+  --blob3: rgba(120, 90, 220, 0.10);
   --shadow: 0 1px 2px rgba(15,26,43,.05), 0 8px 24px rgba(15,26,43,.06);
   --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --f-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -36,6 +44,7 @@
   :root:not([data-theme="light"]) {
     --bg: #0b1322; --surface: #111c2f; --ink: #e8eef7; --muted: #9aa8bc; --line: #22314a;
     --accent: #ff7a3d; --accent-soft: rgba(255,122,61,.14); --track: #4fc3e3; --grid: rgba(232,238,247,.05);
+    --glass: rgba(22, 34, 56, 0.55); --glass-strong: rgba(22, 34, 56, 0.72); --glass-edge: rgba(255, 255, 255, 0.12); --gloss: rgba(255, 255, 255, 0.10); --sheen: rgba(255, 255, 255, 0.05); --blob1: rgba(255, 122, 61, 0.16); --blob2: rgba(79, 195, 227, 0.14); --blob3: rgba(140, 110, 255, 0.12);
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
     color-scheme: dark;
   }
@@ -43,6 +52,7 @@
 :root[data-theme="dark"] {
   --bg: #0b1322; --surface: #111c2f; --ink: #e8eef7; --muted: #9aa8bc; --line: #22314a;
   --accent: #ff7a3d; --accent-soft: rgba(255,122,61,.14); --track: #4fc3e3; --grid: rgba(232,238,247,.05);
+    --glass: rgba(22, 34, 56, 0.55); --glass-strong: rgba(22, 34, 56, 0.72); --glass-edge: rgba(255, 255, 255, 0.12); --gloss: rgba(255, 255, 255, 0.10); --sheen: rgba(255, 255, 255, 0.05); --blob1: rgba(255, 122, 61, 0.16); --blob2: rgba(79, 195, 227, 0.14); --blob3: rgba(140, 110, 255, 0.12);
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
   color-scheme: dark;
 }
@@ -290,6 +300,29 @@ section.block { padding-block: 88px 0; }
 @media (max-width: 860px) { .contact-card { grid-template-columns: 1fr; } }
 footer { padding-block: 28px 40px; color: var(--muted); font-size: var(--s-xs); font-family: var(--f-mono); }
 footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+
+/* Glass (iOS-style frosted surfaces) */
+body::after { content: ""; position: fixed; inset: -10%; z-index: -1; pointer-events: none;
+  background: radial-gradient(40% 35% at 12% 18%, var(--blob1), transparent 70%), radial-gradient(38% 32% at 88% 30%, var(--blob2), transparent 70%), radial-gradient(45% 40% at 60% 85%, var(--blob3), transparent 70%); }
+main, footer { position: relative; z-index: 0; }
+.job-card, .proj, .impact, .paper, .edu, .skills, .link-row, .mini, .chip, .btn:not(.primary), .icon-btn, .portrait .caption, .filters button[aria-pressed="false"], .dashcam, .proj .viz, .bars, .pipe, .shipband {
+  background: var(--glass); -webkit-backdrop-filter: blur(22px) saturate(170%); backdrop-filter: blur(22px) saturate(170%);
+  border-color: var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--gloss), 0 1px 2px rgba(15,26,43,.04), 0 12px 32px rgba(15,26,43,.07); }
+.dashcam, .proj .viz, .bars, .pipe, .shipband { background: var(--glass-strong); box-shadow: inset 0 1px 0 var(--gloss); }
+.job-card, .proj, .impact, .paper, .edu, .skills { border-radius: 26px; }
+.job-card, .impact, .paper, .edu, .skills, .proj { background-image: linear-gradient(180deg, var(--sheen) 0%, transparent 140px); }
+.btn, .icon-btn { border-radius: 999px; }
+.btn.primary { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 78%, #fff) 0%, var(--accent) 55%, color-mix(in srgb, var(--accent) 88%, #000) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent); }
+.top { background: color-mix(in srgb, var(--bg) 60%, transparent); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); }
+.top.scrolled { border-bottom-color: var(--glass-edge); box-shadow: 0 6px 24px rgba(15,26,43,.06); }
+.portrait .frame { border-radius: 28px; border-color: var(--glass-edge); box-shadow: inset 0 1px 0 var(--gloss), 0 18px 40px rgba(15,26,43,.16); }
+.tag { border-radius: 8px; }
+.skill-group .tag, .job .tag { background: var(--glass-strong); border-color: var(--glass-edge); }
+.badge { background: var(--glass-strong); border-color: var(--glass-edge); }
+.badge.hot { background: var(--accent-soft); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
