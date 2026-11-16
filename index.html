@@ -882,48 +882,68 @@ main, footer { position: relative; z-index: 0; }
     addEventListener('scroll', upd, { passive: true }); addEventListener('resize', upd); upd();
   })();
 
-  /* Cursor: optical-flow style arrows, only on the open background (never over cards, never in the intro); magnetic buttons; tilt */
+  /* Cursor: wavy optical-flow arrows. Eased fade, speed-aware strength, a swirling wake behind the pointer,
+     faint over cards and the intro, paused in hidden tabs and thinned on slow machines. Plus magnetic buttons and card tilt. */
   (function () {
     var cv = document.getElementById('vfield'), x = cv.getContext('2d'), W = 0, H = 0, SP = 34, cells = [];
     var mx = -9999, my = -9999, vx = 0, vy = 0, lastT = 0, active = false, raf = 0;
+    var lifeS = 0, speedS = 0, trail = [], prevF = 0, slowAvg = 16, thinned = false;
     var BLOCK = '.hero, .impact, .job-card, .proj, .mini, .paper, .edu, .skills, .link-row, .shipband, .top, .more-head, .sec-head, .contact-card > div:first-child, .toc';
     function size() { var d = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; x.setTransform(d, 0, 0, d, 0, 0);
       cells = []; for (var yy = SP / 2; yy < H; yy += SP) for (var xx = SP / 2; xx < W; xx += SP) cells.push({ x: xx, y: yy, ax: 0, ay: 0 }); }
     size(); addEventListener('resize', size);
     function blocked() { var r = []; [].forEach.call(document.querySelectorAll(BLOCK), function (el) { var b = el.getBoundingClientRect(); if (b.bottom > 0 && b.top < H) r.push([b.left - 10, b.top - 10, b.right + 10, b.bottom + 10]); }); return r; }
     function inside(r, px, py) { for (var i = 0; i < r.length; i++) if (px > r[i][0] && px < r[i][2] && py > r[i][1] && py < r[i][3]) return true; return false; }
-    function frame() {
-      var acc = css('--accent'), ink = css('--muted'), R = 240, moving = false, rects = blocked();
-      var still = performance.now() - lastT, life = active ? Math.max(0, 1 - Math.max(0, still - 350) / 700) : 0;
-      var onCard = inside(rects, mx, my), tw = performance.now() / 1000;
+    function frame(ts) {
+      // 6. adaptive density: if frames are slow, use a coarser grid once
+      if (prevF) { slowAvg = slowAvg * 0.92 + (ts - prevF) * 0.08; if (!thinned && slowAvg > 24) { thinned = true; SP = 46; size(); } }
+      prevF = ts;
+      var now = performance.now(), acc = css('--accent'), ink = css('--muted'), moving = false, rects = blocked();
+      // 1. eased life: quick-ish fade in, slow fade out
+      var still = now - lastT, target = active ? Math.max(0, 1 - Math.max(0, still - 300) / 500) : 0;
+      lifeS += (target - lifeS) * (target > lifeS ? 0.12 : 0.05);
+      // 2. speed-aware strength and reach
+      var sp = Math.sqrt(vx * vx + vy * vy); speedS += (sp - speedS) * 0.15;
+      var sN = Math.min(1, speedS / 16), str = 0.45 + 0.75 * sN, R = 200 + 110 * sN;
+      var onCard = inside(rects, mx, my), tw = now / 1000;
+      // 4. wake: recent pointer positions, each decaying over ~700 ms
+      trail = trail.filter(function (p) { return now - p.t < 700; });
       x.clearRect(0, 0, W, H); vx *= 0.9; vy *= 0.9;
       for (var i = 0; i < cells.length; i++) {
         var c = cells[i], dx = mx - c.x, dy = my - c.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
         var near = active ? Math.max(0, 1 - dist / R) : 0, far = active ? Math.max(0, 1 - dist / (R * 2.4)) : 0;
         var tx = dx / dist * (0.35 + 0.65 * near) * far * 12 + vx * near * near * 0.9, ty = dy / dist * (0.35 + 0.65 * near) * far * 12 + vy * near * near * 0.9;
+        var wk = 0;
+        for (var j = 0; j < trail.length; j++) { var p = trail[j], wx = c.x - p.x, wy = c.y - p.y, wd = Math.sqrt(wx * wx + wy * wy) || 1;
+          if (wd > 130) continue; var dec = (1 - (now - p.t) / 700) * (1 - wd / 130) * p.s, sgn = p.cw;
+          tx += -wy / wd * sgn * dec * 9; ty += wx / wd * sgn * dec * 9; wk = Math.max(wk, dec); }
         c.ax += (tx - c.ax) * 0.16; c.ay += (ty - c.ay) * 0.16;
         var m = Math.sqrt(c.ax * c.ax + c.ay * c.ay); if (m > 0.05) moving = true;
         var clear = Math.min(1, Math.max(0, (dist - 40) / 80)); clear = clear * clear * (3 - 2 * clear);
-        var a = Math.min(0.42, far * far * 0.5) * Math.min(1, m / 2) * clear * life;
+        var a = Math.max(Math.min(0.42, far * far * 0.5) * clear, wk * 0.35) * Math.min(1, m / 2) * lifeS * str;
         if (inside(rects, c.x, c.y)) a *= 0.3; else if (onCard) a *= 0.5;
+        a = Math.min(0.48, a);
         if (m < 0.3 || a < 0.012) continue;
-        // wavy flow: rotate each arrow by a travelling sine field
         var th = 0.7 * Math.sin(c.x * 0.017 + tw * 1.7) * Math.cos(c.y * 0.021 - tw * 1.3), ct = Math.cos(th), st = Math.sin(th);
         var u0 = c.ax / m, v0 = c.ay / m, ux = u0 * ct - v0 * st, uy = u0 * st + v0 * ct;
-        var len = Math.min(18, 5 + m), ex = c.x + ux * len / 2, ey = c.y + uy * len / 2, sx = c.x - ux * len / 2, sy = c.y - uy * len / 2, bend = th * len * 0.6;
-        x.globalAlpha = a; x.strokeStyle = near > 0.05 ? acc : ink; x.fillStyle = x.strokeStyle; x.lineWidth = 1.3;
+        var len = Math.min(16 + 6 * sN, 5 + m), ex = c.x + ux * len / 2, ey = c.y + uy * len / 2, sx = c.x - ux * len / 2, sy = c.y - uy * len / 2, bend = th * len * 0.6;
+        x.globalAlpha = a; x.strokeStyle = (near > 0.05 || wk > 0.15) ? acc : ink; x.fillStyle = x.strokeStyle; x.lineWidth = 1.3;
         x.beginPath(); x.moveTo(sx, sy); x.quadraticCurveTo(c.x - uy * bend, c.y + ux * bend, ex, ey); x.stroke();
         var hs = 3 + len * 0.12; x.beginPath(); x.moveTo(ex, ey); x.lineTo(ex - ux * hs - uy * hs * 0.6, ey - uy * hs + ux * hs * 0.6); x.lineTo(ex - ux * hs + uy * hs * 0.6, ey - uy * hs - ux * hs * 0.6); x.closePath(); x.fill();
       }
       x.globalAlpha = 1;
-      raf = ((moving || life > 0) && (life > 0 || Math.abs(vx) + Math.abs(vy) > 0.05)) ? requestAnimationFrame(frame) : 0;
+      raf = (!document.hidden && (lifeS > 0.01 || target > 0 || trail.length)) ? requestAnimationFrame(frame) : 0;
+      if (!raf) { prevF = 0; x.clearRect(0, 0, W, H); }
     }
-    function kick() { if (!raf && !reduce) raf = requestAnimationFrame(frame); }
-    var magnet = null, tilt = null;
+    function kick() { if (!raf && !reduce && !document.hidden) raf = requestAnimationFrame(frame); }
+    var magnet = null, tilt = null, lastTrail = 0;
     addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
       var now = performance.now(), dt = Math.max(8, now - lastT); lastT = now;
-      if (active) { vx = vx * 0.5 + (e.clientX - mx) / dt * 8; vy = vy * 0.5 + (e.clientY - my) / dt * 8; }
+      if (active) { var nvx = (e.clientX - mx) / dt * 8, nvy = (e.clientY - my) / dt * 8;
+        if (now - lastTrail > 45) { lastTrail = now; var spd = Math.min(1, Math.sqrt(nvx * nvx + nvy * nvy) / 14);
+          if (spd > 0.08) { trail.push({ x: mx, y: my, t: now, s: spd, cw: (trail.length % 2 ? 1 : -1) }); if (trail.length > 14) trail.shift(); } }
+        vx = vx * 0.5 + nvx; vy = vy * 0.5 + nvy; }
       mx = e.clientX; my = e.clientY; active = true; kick();
       if (reduce) return;
       var t = e.target.closest ? e.target : document.body;
@@ -936,6 +956,7 @@ main, footer { position: relative; z-index: 0; }
         k.style.transform = 'perspective(1000px) rotateX(' + (-py * 3).toFixed(2) + 'deg) rotateY(' + (px * 4).toFixed(2) + 'deg) translateY(-4px)'; tilt = k; }
     }, { passive: true });
     document.addEventListener('mouseleave', function () { active = false; kick(); });
+    document.addEventListener('visibilitychange', function () { if (document.hidden) { if (raf) cancelAnimationFrame(raf); raf = 0; active = false; trail = []; lifeS = 0; x.clearRect(0, 0, W, H); } });
     addEventListener('scroll', function () { x.clearRect(0, 0, W, H); }, { passive: true });
   })();
 
