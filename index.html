@@ -103,6 +103,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .hero-text { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 .hero h1 { font-size: var(--s-hero); font-weight: 800; letter-spacing: -0.045em; line-height: .95; white-space: nowrap; }
 .hero h1 .last { color: var(--accent); }
+.boot { font-family: var(--f-mono); font-size: var(--s-xs); color: var(--muted); margin-top: -10px; min-height: 1.4em; }
+.boot .p { color: var(--accent); }
+.boot .ok { color: #1fae5b; }
+.js .boot .ok.wait { opacity: 0; }
+.caret { display: inline-block; width: .08em; height: .82em; margin-left: .06em; background: var(--accent); vertical-align: baseline; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
 .role { font-family: var(--f-display); font-size: var(--s-xl); font-weight: 500; color: var(--muted); letter-spacing: -0.01em; }
 .role strong { color: var(--ink); font-weight: 700; }
 .rotator { font-family: var(--f-mono); font-size: var(--s-sm); color: var(--ink); display: flex; align-items: center; gap: 10px; min-height: 1.6em; flex-wrap: wrap; }
@@ -357,7 +363,8 @@ main, footer { position: relative; z-index: 0; }
     <div class="wrap">
       <div class="hero-text">
         <span class="eyebrow rise" style="--d:0">Machine Learning · Data Scientist</span>
-        <h1 class="rise" style="--d:1">Rahul <span class="last">Verma</span></h1>
+        <h1 class="rise" style="--d:1" id="name" aria-label="Rahul Verma">Rahul <span class="last">Verma</span></h1>
+        <div class="boot" id="boot" aria-hidden="true"><span class="p">&gt;</span> <span id="bootTxt">loading rahul_verma.ckpt … done</span> <span class="ok">✓</span></div>
         <p class="role rise" style="--d:2">Data Scientist at <strong>Netradyne</strong></p>
         <div class="rotator rise" style="--d:3" aria-live="off"><span class="label">I work on</span><span class="word" id="rotWord">on-device computer vision</span></div>
         <p class="lede rise" style="--d:4">I build ML systems that hold up in production. My vision models run on <b>100,000+ fleet devices</b> across the US, UK and Canada.<br>I also build LLM systems end to end, from <b>hybrid RAG pipelines</b> to <b>LLM fine-tuning, quantization and production serving</b>.</p>
@@ -713,6 +720,23 @@ main, footer { position: relative; z-index: 0; }
     tlp.style.height = (p * h) + 'px';
   }
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  /* Name types in like a terminal, then a boot line confirms */
+  (function () {
+    if (reduce) return;
+    var h = document.getElementById('name'), last = h.querySelector('.last'), bt = document.getElementById('bootTxt'), ok = document.querySelector('#boot .ok');
+    var first = 'Rahul ', second = 'Verma', boot = bt.textContent;
+    h.firstChild.textContent = ''; last.textContent = ''; bt.textContent = ''; ok.classList.add('wait');
+    var caret = document.createElement('span'); caret.className = 'caret'; h.appendChild(caret);
+    var i = 0, steps = first.length + second.length;
+    setTimeout(function type() {
+      i++;
+      if (i <= first.length) h.firstChild.textContent = first.slice(0, i); else last.textContent = second.slice(0, i - first.length);
+      if (i < steps) return setTimeout(type, 70 + Math.random() * 60);
+      var j = 0;
+      setTimeout(function line() { j++; bt.textContent = boot.slice(0, j); if (j < boot.length) return setTimeout(line, 22); ok.classList.remove('wait'); setTimeout(function () { caret.remove(); }, 1600); }, 250);
+    }, 450);
+  })();
 
   /* Role rotator */
   var words = ['on-device computer vision', 'AI agents', 'hybrid retrieval & RAG', 'LLM fine-tuning & serving', 'health signals from wearables'];
