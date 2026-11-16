@@ -227,6 +227,23 @@ section.block { padding-block: 76px 0; }
 
 .proj .viz { position: relative; height: 118px; border-radius: var(--r-inner); border: 1px solid var(--line); background: var(--bg); overflow: hidden; }
 .proj .viz canvas { width: 100%; height: 100%; display: block; }
+/* Compact featured projects */
+.featured .proj { padding: 18px 20px; gap: 10px; border-radius: 22px; }
+.featured .proj h3 { font-size: 1.18rem; }
+.featured .proj .pitch { font-size: .9rem; line-height: 1.5; }
+.featured .proj .viz { height: 112px; }
+.featured .bars { padding: 8px 12px; gap: 4px; }
+.featured .bars .metric { font-size: .66rem; }
+.featured .bar-row { font-size: .72rem; }
+.featured .bar { height: 8px; }
+.featured .kv b { font-size: 1rem; }
+.featured .kv span { font-size: .72rem; }
+.featured .tag { font-size: .68rem; padding: 2px 8px; }
+.featured .badge { font-size: .64rem; padding: 2px 8px; }
+.featured .pipe { padding: 8px 12px; gap: 6px; }
+.featured .pipe li { padding: 6px 8px; }
+.featured .link-arrow { font-size: .85rem; }
+#projects .sec-head { margin-bottom: 20px; }
 /* More work */
 .more-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin: 40px 0 14px; }
 .more-head h3 { font-size: var(--s-lg); }
@@ -1399,7 +1416,7 @@ main, footer { position: relative; z-index: 0; }
       var CYC = 6, u = s.t % CYC, c = Math.floor(s.t / CYC);
       if (c !== s.cyc) { s.cyc = c; s.q = Q[c % Q.length]; }
       x.clearRect(0, 0, W, s.h);
-      var bw = Math.min(84, W * 0.26), bh = 38, gap = 12, total = bw * 3 + gap * 2, x0 = (W - total) / 2, by = s.h - bh - 22, fade = u > CYC - 0.5 ? (CYC - u) / 0.5 : 1;
+      var bw = Math.min(84, W * 0.26), bh = 32, gap = 12, total = bw * 3 + gap * 2, x0 = (W - total) / 2, by = s.h - bh - 18, fade = u > CYC - 0.5 ? (CYC - u) / 0.5 : 1;
       // query chip, typed out
       var text = s.q[0], n = Math.min(text.length, Math.floor(u * 28)), qx = x0, qy = 8;
       x.font = '500 10.5px "JetBrains Mono", monospace';
@@ -1422,10 +1439,10 @@ main, footer { position: relative; z-index: 0; }
         x.beginPath(); x.roundRect ? x.roundRect(bx, by, bw, bh, 7) : x.rect(bx, by, bw, bh); x.fill(); x.stroke();
         // tiny glyphs: film strip / clip / frame
         x.strokeStyle = hit ? '#fff' : ink; x.lineWidth = 1.2;
-        if (i === 0) { x.strokeRect(bx + bw / 2 - 14, by + 9, 28, 14); }
-        else if (i === 1) { for (var f = 0; f < 3; f++) x.strokeRect(bx + bw / 2 - 16 + f * 11, by + 10, 9, 12); }
-        else { x.strokeRect(bx + bw / 2 - 8, by + 8, 16, 16); x.beginPath(); x.arc(bx + bw / 2 + 2, by + 13, 2, 0, 6.283); x.stroke(); }
-        x.fillStyle = hit ? '#fff' : ink; x.font = '500 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.fillText(name, bx + bw / 2, by + 33); x.textAlign = 'left';
+        if (i === 0) { x.strokeRect(bx + bw / 2 - 12, by + 5, 24, 12); }
+        else if (i === 1) { for (var f = 0; f < 3; f++) x.strokeRect(bx + bw / 2 - 16 + f * 11, by + 5, 9, 11); }
+        else { x.strokeRect(bx + bw / 2 - 7, by + 4, 14, 14); x.beginPath(); x.arc(bx + bw / 2 + 2, by + 9, 2, 0, 6.283); x.stroke(); }
+        x.fillStyle = hit ? '#fff' : ink; x.font = '500 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.fillText(name, bx + bw / 2, by + 28); x.textAlign = 'left';
         if (hit && s.q[2] !== 'deep') { x.fillStyle = acc; x.font = '600 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.fillText(s.q[2], bx + bw / 2, by + bh + 13); x.textAlign = 'left'; }
       });
       x.globalAlpha = 1;
@@ -1440,8 +1457,8 @@ main, footer { position: relative; z-index: 0; }
       var x = s.x, W = s.w, ink = css('--muted'), acc = css('--accent'), trk = css('--track'), surf = css('--surface'), line = css('--line'), fg = css('--ink');
       var CYC = 7, u = s.t % CYC, fade = u > CYC - 0.5 ? (CYC - u) / 0.5 : 1;
       x.clearRect(0, 0, W, s.h); x.globalAlpha = fade;
-      var area = Math.min(300, W - 24), x0 = (W - area) / 2, y0 = 22, n = 6, k = Math.min(1, Math.max(0, (u - 0.8) / 1.2));
-      var cell = 13 - 5 * k, gpad = 2;
+      var area = Math.min(300, W - 24), x0 = (W - area) / 2, y0 = 18, n = 6, k = Math.min(1, Math.max(0, (u - 0.8) / 1.2));
+      var cell = Math.min(13, (s.h - y0 - 10) / n - 2) - 5 * k, gpad = 2;
       x.font = '500 10px "JetBrains Mono", monospace'; x.fillStyle = ink; x.fillText(k < 1 ? 'fp16 weights' : 'GGUF Q4_K_M · 3.1× smaller', x0, y0 - 6);
       for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
         var v = (Math.sin(r * 1.7 + c * 2.3) + 1) / 2, q = k > 0.5 ? Math.round(v * 3) / 3 : v;
@@ -1470,16 +1487,16 @@ main, footer { position: relative; z-index: 0; }
       var x = s.x, W = s.w, ink = css('--muted'), acc = css('--accent'), trk = css('--track'), surf = css('--surface'), line = css('--line'), fg = css('--ink');
       var CYC = 7, u = s.t % CYC, fade = u > CYC - 0.5 ? (CYC - u) / 0.5 : 1;
       x.clearRect(0, 0, W, s.h); x.globalAlpha = fade;
-      var area = Math.min(300, W - 24), x0 = (W - area) / 2, y0 = 8, iw = 96, ih = 62;
+      var area = Math.min(300, W - 24), x0 = (W - area) / 2, y0 = 6, iw = 90, ih = 56;
       // the news photo (line art)
       x.fillStyle = surf; x.strokeStyle = line; x.lineWidth = 1.3; rr(x, x0, y0, iw, ih, 6); x.fill(); x.stroke();
       x.strokeStyle = ink; x.lineWidth = 1.3;
-      x.beginPath(); x.arc(x0 + 42, y0 + 28, 8, 0, 6.283); x.stroke();                       // head
-      x.beginPath(); x.moveTo(x0 + 26, y0 + 70); x.quadraticCurveTo(x0 + 42, y0 + 34, x0 + 58, y0 + 70); x.stroke(); // shoulders
-      x.strokeRect(x0 + 64, y0 + 46, 30, 24);                                                 // podium
+      x.beginPath(); x.arc(x0 + 40, y0 + 22, 7, 0, 6.283); x.stroke();                       // head
+      x.beginPath(); x.moveTo(x0 + 26, y0 + 54); x.quadraticCurveTo(x0 + 40, y0 + 28, x0 + 54, y0 + 54); x.stroke(); // shoulders
+      x.strokeRect(x0 + 60, y0 + 36, 26, 18);                                                 // podium
       // CLIP boxes
-      if (u > 0.6) { x.strokeStyle = trk; x.lineWidth = 1.5; x.strokeRect(x0 + 24, y0 + 16, 38, 56); x.strokeRect(x0 + 62, y0 + 44, 34, 28);
-        x.fillStyle = trk; x.font = '500 9px "JetBrains Mono", monospace'; x.fillText('person', x0 + 25, y0 + 13); x.fillText('podium', x0 + 62, y0 + 41); }
+      if (u > 0.6) { x.strokeStyle = trk; x.lineWidth = 1.5; x.strokeRect(x0 + 22, y0 + 12, 36, 44); x.strokeRect(x0 + 58, y0 + 33, 30, 23);
+        x.fillStyle = trk; x.font = '500 9px "JetBrains Mono", monospace'; x.fillText('person', x0 + 23, y0 + 10); x.fillText('podium', x0 + 58, y0 + 31); }
       // article entities
       var ents = ['Senator', 'Columbia', 'July 18'], ex = x0 + iw + 16;
       x.font = '500 10px "JetBrains Mono", monospace'; x.fillStyle = ink; x.fillText('article entities', ex, y0 + 4);
@@ -1488,10 +1505,10 @@ main, footer { position: relative; z-index: 0; }
         x.fillStyle = acc; x.fillText(e, ex + 7, y0 + 25 + i * 22); });
       // caption, typed by the decoder
       var cap = 'Senator speaks at a rally in Columbia on July 18.', n = u > 2.6 ? Math.floor((u - 2.6) * 22) : 0;
-      x.fillStyle = ink; x.font = '500 10px "JetBrains Mono", monospace'; x.fillText(u > 2.4 ? 'GPT-2 caption' : '', x0, y0 + ih + 20);
+      x.fillStyle = ink; x.font = '500 10px "JetBrains Mono", monospace'; x.fillText(u > 2.4 ? 'GPT-2 caption' : '', x0, y0 + ih + 16);
       x.fillStyle = fg; x.font = '500 11px "IBM Plex Sans", sans-serif';
       var line1 = cap.slice(0, Math.min(n, cap.length));
-      x.fillText(line1 + (n < cap.length && n > 0 ? '▏' : ''), x0, y0 + ih + 36);
+      x.fillText(line1 + (n < cap.length && n > 0 ? '▏' : ''), x0, y0 + ih + 30);
       x.globalAlpha = 1;
     }
   });
