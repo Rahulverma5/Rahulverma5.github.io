@@ -183,9 +183,7 @@ section.block { padding-block: 88px 0; }
 /* Featured projects */
 .featured { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .proj { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 26px; display: flex; flex-direction: column; gap: 16px; overflow: hidden; transition: transform .25s, border-color .25s, box-shadow .25s; min-width: 0; }
-.proj::before { content: ""; position: absolute; inset: 0; background: radial-gradient(220px circle at var(--mx, -400px) var(--my, -400px), var(--accent-soft), transparent 60%); opacity: 0; transition: opacity .3s; pointer-events: none; }
 .proj:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: var(--shadow); }
-.proj:hover::before { opacity: 1; }
 .proj > * { position: relative; }
 .proj-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .badge { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
@@ -317,7 +315,6 @@ main, footer { position: relative; z-index: 0; }
 .dashcam, .proj .viz, .bars, .pipe, .shipband { background: var(--glass-strong); box-shadow: inset 0 1px 0 var(--gloss); }
 .job-card, .proj, .impact, .paper, .edu, .skills { border-radius: 26px; }
 .job-card, .impact, .paper, .edu, .skills, .proj { background-image: linear-gradient(180deg, var(--sheen) 0%, transparent 140px); }
-.job-card, .impact, .paper, .edu, .skills, .link-row, .mini { background-image: radial-gradient(200px circle at var(--mx, -500px) var(--my, -500px), var(--accent-soft), transparent 65%), linear-gradient(180deg, var(--sheen) 0%, transparent 140px); }
 #vfield { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 90; pointer-events: none; display: block; }
 .proj, .mini { transform-style: preserve-3d; }
 @media (hover: none) { #vfield { display: none; } }
