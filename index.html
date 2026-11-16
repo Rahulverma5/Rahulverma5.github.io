@@ -98,7 +98,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 /* Hero */
 .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
 #fusion { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--bg) 62%, transparent) 0%, color-mix(in srgb, var(--bg) 50%, transparent) 40%, transparent 62%); pointer-events: none; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--bg) 50%, transparent) 0%, color-mix(in srgb, var(--bg) 40%, transparent) 40%, transparent 62%); pointer-events: none; }
 .hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: 48px; align-items: center; padding-block: 72px 56px; }
 .hero-text { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 .hero h1 { font-size: var(--s-hero); font-weight: 800; letter-spacing: -0.045em; line-height: .95; white-space: nowrap; }
@@ -132,7 +132,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   .portrait { order: -1; width: min(100%, 149px); justify-self: start; align-items: flex-start; }
   .monogram { font-size: 4rem; }
     .portrait .caption { font-size: .7rem; padding: 4px 10px; }
-  .hero::after { background: color-mix(in srgb, var(--bg) 55%, transparent); }
+  .hero::after { background: color-mix(in srgb, var(--bg) 44%, transparent); }
 }
 
 /* Load sequence (hero only, starts visible if JS/motion is off) */
@@ -809,7 +809,7 @@ main, footer { position: relative; z-index: 0; }
         c.ax += (tx - c.ax) * 0.16; c.ay += (ty - c.ay) * 0.16;
         var m = Math.sqrt(c.ax * c.ax + c.ay * c.ay);
         if (m > 0.05) moving = true;
-        var len = Math.min(18, 5 + m), a = Math.min(0.6, far * far * 0.7) * Math.min(1, m / 2);
+        var len = Math.min(18, 5 + m), a = Math.min(0.36, far * far * 0.42) * Math.min(1, m / 2);
         if (m < 0.3 || a < 0.02) continue;
         var ux = c.ax / m, uy = c.ay / m, ex = c.x + ux * len / 2, ey = c.y + uy * len / 2, sx = c.x - ux * len / 2, sy = c.y - uy * len / 2;
         x.globalAlpha = a; x.strokeStyle = near > 0.05 ? acc : ink; x.fillStyle = x.strokeStyle; x.lineWidth = 1.3;
@@ -1034,13 +1034,13 @@ main, footer { position: relative; z-index: 0; }
         });
         x.lineWidth = 1;
         s.edges.forEach(function (e) { var a = s.nodes[e[0]], b = s.nodes[e[1]], g = Math.min(a.g, b.g) + 0.5 * Math.max(a.g, b.g);
-          x.globalAlpha = 0.12 + 0.35 * g; x.strokeStyle = g > 0.3 ? trk : ink; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); });
+          x.globalAlpha = 0.15 + 0.42 * g; x.strokeStyle = g > 0.3 ? trk : ink; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); });
         if (u < 1.3 && Math.random() < 0.7) { var cand = s.edges.filter(function (e) { return Math.abs(s.nodes[e[0]].l - front) < 0.8; }); if (cand.length) s.pulses.push({ e: cand[Math.floor(Math.random() * cand.length)], k: 0 }); }
         if (mouse.on && Math.random() < 0.3) { var near = s.edges.filter(function (e) { return s.nodes[e[1]].g > 0.3; }); if (near.length) s.pulses.push({ e: near[Math.floor(Math.random() * near.length)], k: 0 }); }
         s.pulses = s.pulses.filter(function (p) { p.k += dt * 2.2; return p.k < 1; });
-        s.pulses.forEach(function (p) { var a = s.nodes[p.e[0]], b = s.nodes[p.e[1]]; x.globalAlpha = 0.8 * Math.sin(p.k * Math.PI); x.fillStyle = acc; x.beginPath(); x.arc(a.x + (b.x - a.x) * p.k, a.y + (b.y - a.y) * p.k, 2.2, 0, 6.283); x.fill(); });
-        s.nodes.forEach(function (n) { x.globalAlpha = 0.4 + 0.6 * n.g; x.fillStyle = n.g > 0.3 ? acc : ink; x.beginPath(); x.arc(n.x, n.y, 4.5 + 3 * n.g, 0, 6.283); x.fill(); });
-        x.font = '500 10px "JetBrains Mono", monospace'; x.fillStyle = ink; x.globalAlpha = 0.7;
+        s.pulses.forEach(function (p) { var a = s.nodes[p.e[0]], b = s.nodes[p.e[1]]; x.globalAlpha = 0.95 * Math.sin(p.k * Math.PI); x.fillStyle = acc; x.beginPath(); x.arc(a.x + (b.x - a.x) * p.k, a.y + (b.y - a.y) * p.k, 2.2, 0, 6.283); x.fill(); });
+        s.nodes.forEach(function (n) { x.globalAlpha = Math.min(1, 0.5 + 0.6 * n.g); x.fillStyle = n.g > 0.3 ? acc : ink; x.beginPath(); x.arc(n.x, n.y, 4.5 + 3 * n.g, 0, 6.283); x.fill(); });
+        x.font = '500 10px "JetBrains Mono", monospace'; x.fillStyle = ink; x.globalAlpha = 0.85;
         var bottom = Math.max.apply(null, s.nodes.map(function (n) { return n.y; }));
         x.textAlign = 'center'; x.fillText('encoder', (s.nx0 + s.nx1) / 2, bottom + 24); x.textAlign = 'left';
         // input query chip
@@ -1054,10 +1054,10 @@ main, footer { position: relative; z-index: 0; }
           var px = p.x + Math.sin(s.t * 0.3 + p.p) * 3, py = p.y + Math.cos(s.t * 0.25 + p.p) * 3, hit = s.q.top.indexOf(i);
           if (hit >= 0 && age > 0) {
             var k = Math.min(1, Math.max(0, (age - hit * 0.12) / 0.45));
-            x.globalAlpha = 0.7 * k * fade; x.strokeStyle = trk; x.lineWidth = 1.4; x.beginPath(); x.moveTo(s.q.x, s.q.y); x.lineTo(s.q.x + (px - s.q.x) * k, s.q.y + (py - s.q.y) * k); x.stroke();
-            x.globalAlpha = 0.35 + 0.65 * k * fade; x.fillStyle = trk; x.beginPath(); x.arc(px, py, 3.2 + 1.5 * k * fade, 0, 6.283); x.fill();
+            x.globalAlpha = 0.85 * k * fade; x.strokeStyle = trk; x.lineWidth = 1.4; x.beginPath(); x.moveTo(s.q.x, s.q.y); x.lineTo(s.q.x + (px - s.q.x) * k, s.q.y + (py - s.q.y) * k); x.stroke();
+            x.globalAlpha = 0.45 + 0.55 * k * fade; x.fillStyle = trk; x.beginPath(); x.arc(px, py, 3.2 + 1.5 * k * fade, 0, 6.283); x.fill();
             if (k >= 1 && fade > 0.3) { x.globalAlpha = 0.8 * fade; x.fillStyle = ink; x.fillText('#' + (hit + 1), px + 7, py + 3); }
-          } else { x.globalAlpha = 0.32; x.fillStyle = ink; x.beginPath(); x.arc(px, py, 2.2, 0, 6.283); x.fill(); }
+          } else { x.globalAlpha = 0.4; x.fillStyle = ink; x.beginPath(); x.arc(px, py, 2.4, 0, 6.283); x.fill(); }
         });
 
         // --- query embedding travels from encoder output to the index ---
