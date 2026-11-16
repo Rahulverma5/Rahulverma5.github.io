@@ -365,6 +365,25 @@ main, footer { position: relative; z-index: 0; }
 
 .pre { opacity: 0; transform: translateY(18px); }
 .revealing { transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1) !important; }
+/* Phone fixes */
+@media (max-width: 560px) {
+  .timeline::before, .timeline .progress, .job::before { display: none; }
+  .job { padding-left: 0; }
+  .proj .viz .cap { top: auto; bottom: 8px; }
+  .dashcam .cap, .proj .viz .cap { max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; font-size: .6rem; }
+  .proj-top { flex-wrap: wrap; }
+  .filters button { min-height: 40px; padding: 8px 14px; }
+  .link-arrow { min-height: 44px; }
+  .copy { min-height: 36px; padding: 6px 12px; }
+  .brand { min-height: 44px; }
+  .sec-head p a, .paper .cta .btn { min-height: 44px; display: inline-flex; align-items: center; }
+  .job-card { border-radius: 22px; }
+}
+@media (max-width: 360px) {
+  :root { --pad: 16px; }
+  .hero h1 { font-size: 2.6rem; }
+  .btn { padding: 10px 14px; }
+}
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -1005,9 +1024,10 @@ main, footer { position: relative; z-index: 0; }
     // HUD
     var n = objs.filter(function (o) { return o.z < 34; }).length;
     ctx.font = '500 11px "JetBrains Mono", monospace'; ctx.textAlign = 'right'; ctx.fillStyle = ink; ctx.globalAlpha = 0.8;
-    ctx.fillText('42 km/h · ' + n + ' objects · 170 ms/frame', W - 18, H - 16);
+    var hud = W < 520 ? '170 ms/frame' : '42 km/h · ' + n + ' objects · 170 ms/frame', hy = W < 520 ? 18 : H - 16;
+    ctx.fillText(hud, W - 18, hy);
     ctx.fillStyle = acc; ctx.globalAlpha = (Math.sin(t * 4) > 0) ? 0.9 : 0.25; ctx.beginPath();
-    var hudW = ctx.measureText('42 km/h · ' + n + ' objects · 170 ms/frame').width; ctx.arc(W - 30 - hudW, H - 20, 4, 0, 6.283); ctx.fill();
+    var hudW = ctx.measureText(hud).width; ctx.arc(W - 30 - hudW, hy - 4, 4, 0, 6.283); ctx.fill();
     ctx.textAlign = 'left'; ctx.globalAlpha = 1;
   }
   var prev = 0;
@@ -1319,7 +1339,7 @@ main, footer { position: relative; z-index: 0; }
       });
       var count = Math.round(roll * 100);
       x.fillStyle = ink; x.font = '500 11px "JetBrains Mono", monospace';
-      x.fillText('fleet rollout · ' + (roll >= 1 ? '100k+ devices' : count + '%'), s.fleetX, y + s.cell * 1.5 + 18);
+      x.fillText((s.wide ? 'fleet rollout · ' : '') + (roll >= 1 ? '100k+ devices' : count + '%'), s.fleetX, y + s.cell * 1.5 + 18);
       var fade = u > CYC - 0.5 ? (CYC - u) / 0.5 : 1; if (fade < 1) { x.globalAlpha = 1 - fade; x.fillStyle = css('--bg'); x.fillRect(0, 0, s.w, s.h); x.globalAlpha = 1; }
     }
   });
