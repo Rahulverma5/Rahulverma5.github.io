@@ -316,19 +316,9 @@ main, footer { position: relative; z-index: 0; }
 .job-card, .proj, .impact, .paper, .edu, .skills { border-radius: 26px; }
 .job-card, .impact, .paper, .edu, .skills, .proj { background-image: linear-gradient(180deg, var(--sheen) 0%, transparent 140px); }
 .job-card, .impact, .paper, .edu, .skills, .link-row, .mini { background-image: radial-gradient(200px circle at var(--mx, -500px) var(--my, -500px), var(--accent-soft), transparent 65%), linear-gradient(180deg, var(--sheen) 0%, transparent 140px); }
-.cursor-glow { position: fixed; left: 0; top: 0; width: 340px; height: 340px; margin: -170px 0 0 -170px; border-radius: 50%; pointer-events: none; z-index: -1;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent) 0%, color-mix(in srgb, var(--accent) 8%, transparent) 40%, transparent 70%);
-  opacity: 0; transition: opacity .4s; will-change: transform; }
-.cursor-glow.on { opacity: 1; }
-.cursor-ring { position: fixed; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 1.5px solid var(--accent); border-radius: 50%;
-  pointer-events: none; z-index: 100; opacity: 0; will-change: transform;
-  transition: width .28s cubic-bezier(.2,.7,.2,1), height .28s cubic-bezier(.2,.7,.2,1), margin .28s cubic-bezier(.2,.7,.2,1), background-color .28s, border-color .28s, opacity .3s; }
-.cursor-ring.on { opacity: .85; }
-.cursor-ring.link { width: 58px; height: 58px; margin: -29px 0 0 -29px; background-color: color-mix(in srgb, var(--accent) 14%, transparent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
-.cursor-ring.card { width: 46px; height: 46px; margin: -23px 0 0 -23px; border-style: dashed; }
-.cursor-ring.down { width: 22px; height: 22px; margin: -11px 0 0 -11px; background-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+#vfield { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 90; pointer-events: none; display: block; }
 .proj, .mini { transform-style: preserve-3d; }
-@media (hover: none) { .cursor-glow, .cursor-ring { display: none; } }
+@media (hover: none) { #vfield { display: none; } }
 .btn, .icon-btn { border-radius: 999px; }
 .btn.primary { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 78%, #fff) 0%, var(--accent) 55%, color-mix(in srgb, var(--accent) 88%, #000) 100%);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent); }
@@ -350,8 +340,7 @@ main, footer { position: relative; z-index: 0; }
 <body>
 <script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('rv-theme');document.documentElement.setAttribute('data-theme',t||'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
 
-<div class="cursor-glow" id="glow" aria-hidden="true"></div>
-<div class="cursor-ring" id="ring" aria-hidden="true"></div>
+<canvas id="vfield" aria-hidden="true"></canvas>
 <header class="top" id="top">
   <div class="wrap">
     <a class="brand" href="#home" aria-label="Rahul Verma, back to top"><span class="brand-mark">RV</span>Rahul Verma</a>
@@ -800,43 +789,60 @@ main, footer { position: relative; z-index: 0; }
     addEventListener('scroll', upd, { passive: true }); addEventListener('resize', upd); upd();
   })();
 
-  /* Cursor: trailing ring + glow, magnetic buttons, 3D tilt on project cards, spotlight on cards */
+  /* Cursor: a vector field (like optical-flow arrows) that points to and flows with the mouse; magnetic buttons; tilt; card spotlight */
   (function () {
-    var g = document.getElementById('glow'), ring = document.getElementById('ring'), tx = 0, ty = 0, gx = 0, gy = 0, rx = 0, ry = 0, raf = 0, started = false;
-    var SPOT = '.job-card, .impact, .paper, .edu, .skills, .link-row, .mini';
-    function tick() {
-      gx += (tx - gx) * 0.12; gy += (ty - gy) * 0.12; rx += (tx - rx) * 0.3; ry += (ty - ry) * 0.3;
-      g.style.transform = 'translate(' + gx.toFixed(1) + 'px,' + gy.toFixed(1) + 'px)';
-      ring.style.transform = 'translate(' + rx.toFixed(1) + 'px,' + ry.toFixed(1) + 'px)';
-      raf = Math.abs(tx - gx) + Math.abs(ty - gy) > 0.4 ? requestAnimationFrame(tick) : 0;
+    var cv = document.getElementById('vfield'), x = cv.getContext('2d'), W = 0, H = 0, d = 1, SP = 34, cells = [];
+    var mx = -9999, my = -9999, vx = 0, vy = 0, lastT = 0, active = false, raf = 0, idle = 0;
+    function size() { d = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; x.setTransform(d, 0, 0, d, 0, 0);
+      cells = []; for (var yy = SP / 2; yy < H; yy += SP) for (var xx = SP / 2; xx < W; xx += SP) cells.push({ x: xx, y: yy, ax: 0, ay: 0 }); }
+    size(); addEventListener('resize', size);
+    function frame() {
+      var acc = css('--accent'), ink = css('--muted'), R = 240, moving = false;
+      x.clearRect(0, 0, W, H);
+      vx *= 0.9; vy *= 0.9;
+      for (var i = 0; i < cells.length; i++) {
+        var c = cells[i], dx = mx - c.x, dy = my - c.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        var near = active ? Math.max(0, 1 - dist / R) : 0, far = active ? Math.max(0, 1 - dist / (R * 2.4)) : 0;
+        // target: point toward the cursor (attraction) + flow along the cursor's motion near it
+        var tx = dx / dist * (0.35 + 0.65 * near) * far * 12 + vx * near * near * 0.9;
+        var ty = dy / dist * (0.35 + 0.65 * near) * far * 12 + vy * near * near * 0.9;
+        c.ax += (tx - c.ax) * 0.16; c.ay += (ty - c.ay) * 0.16;
+        var m = Math.sqrt(c.ax * c.ax + c.ay * c.ay);
+        if (m > 0.05) moving = true;
+        var len = Math.min(18, 5 + m), a = Math.min(0.6, far * far * 0.7) * Math.min(1, m / 2);
+        if (m < 0.3 || a < 0.02) continue;
+        var ux = c.ax / m, uy = c.ay / m, ex = c.x + ux * len / 2, ey = c.y + uy * len / 2, sx = c.x - ux * len / 2, sy = c.y - uy * len / 2;
+        x.globalAlpha = a; x.strokeStyle = near > 0.05 ? acc : ink; x.fillStyle = x.strokeStyle; x.lineWidth = 1.3;
+        x.beginPath(); x.moveTo(sx, sy); x.lineTo(ex, ey); x.stroke();
+        var hs = 3 + len * 0.12; x.beginPath(); x.moveTo(ex, ey); x.lineTo(ex - ux * hs - uy * hs * 0.6, ey - uy * hs + ux * hs * 0.6); x.lineTo(ex - ux * hs + uy * hs * 0.6, ey - uy * hs - ux * hs * 0.6); x.closePath(); x.fill();
+      }
+      x.globalAlpha = 1;
+      raf = (moving || Math.abs(vx) + Math.abs(vy) > 0.05) ? requestAnimationFrame(frame) : 0;
     }
-    var magnet = null, tilt = null;
+    function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+    var magnet = null, tilt = null, SPOT = '.job-card, .impact, .paper, .edu, .skills, .link-row, .mini';
     addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
-      tx = e.clientX; ty = e.clientY;
-      if (!started) { started = true; gx = rx = tx; gy = ry = ty; g.classList.add('on'); if (!reduce) ring.classList.add('on'); }
-      if (!raf) raf = requestAnimationFrame(tick);
+      var now = performance.now(), dt = Math.max(8, now - lastT); lastT = now;
+      if (active) { vx = vx * 0.5 + (e.clientX - mx) / dt * 16 * 0.5; vy = vy * 0.5 + (e.clientY - my) / dt * 16 * 0.5; }
+      mx = e.clientX; my = e.clientY; active = true; if (!reduce) kick();
       var t = e.target.closest ? e.target : document.body;
-      var link = t.closest('a, button'), card = t.closest('.proj, .mini, .job-card, .paper');
-      ring.classList.toggle('link', !!link); ring.classList.toggle('card', !link && !!card);
       var c = t.closest(SPOT);
       if (c) { var r = c.getBoundingClientRect(); c.style.setProperty('--mx', (e.clientX - r.left) + 'px'); c.style.setProperty('--my', (e.clientY - r.top) + 'px'); }
       if (reduce) return;
-      // magnetic buttons
       var m = t.closest('.btn, .icon-btn');
       if (magnet && magnet !== m) { magnet.style.transform = ''; magnet = null; }
       if (m) { var b = m.getBoundingClientRect(); m.style.transform = 'translate(' + ((e.clientX - b.left - b.width / 2) * 0.22).toFixed(1) + 'px,' + ((e.clientY - b.top - b.height / 2) * 0.3).toFixed(1) + 'px)'; magnet = m; }
-      // 3D tilt on project cards
       var k = t.closest('.proj, .mini');
       if (tilt && tilt !== k) { tilt.style.transform = ''; tilt = null; }
       if (k) { var q = k.getBoundingClientRect(), px = (e.clientX - q.left) / q.width - 0.5, py = (e.clientY - q.top) / q.height - 0.5;
         k.style.transform = 'perspective(1000px) rotateX(' + (-py * 3).toFixed(2) + 'deg) rotateY(' + (px * 4).toFixed(2) + 'deg) translateY(-4px)'; tilt = k; }
     }, { passive: true });
-    addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') ring.classList.add('down'); });
-    addEventListener('pointerup', function () { ring.classList.remove('down'); });
-    document.addEventListener('mouseleave', function () { g.classList.remove('on'); ring.classList.remove('on'); started = false; });
+    document.addEventListener('mouseleave', function () { active = false; kick(); });
+    addEventListener('scroll', kick, { passive: true });
     document.addEventListener('mouseout', function (e) { var c = e.target.closest && e.target.closest(SPOT);
       if (c && !c.contains(e.relatedTarget)) { c.style.removeProperty('--mx'); c.style.removeProperty('--my'); } });
+    frame();
   })();
 
   /* Card spotlight */
