@@ -412,7 +412,7 @@ main, footer { position: relative; z-index: 0; }
   </div>
 </header>
 
-<nav class="toc" id="toc" aria-label="Page sections"><ol><li><a href="#home"><span class="lbl">Intro</span><i></i></a></li><li><a href="#impact"><span class="lbl">Impact</span><i></i></a></li><li><a href="#experience"><span class="lbl">Experience</span><i></i></a></li><li><a href="#projects"><span class="lbl">Projects</span><i></i></a></li><li><a href="#miniGrid"><span class="lbl">More from GitHub</span><i></i></a></li><li><a href="#research"><span class="lbl">Publications</span><i></i></a></li><li><a href="#education"><span class="lbl">Education & skills</span><i></i></a></li><li><a href="#contact"><span class="lbl">Contact</span><i></i></a></li></ol></nav>
+<nav class="toc" id="toc" aria-label="Page sections"><ol><li><a href="#home"><span class="lbl">Intro</span><i></i></a></li><li><a href="#impact"><span class="lbl">Impact</span><i></i></a></li><li><a href="#experience"><span class="lbl">Experience</span><i></i></a></li><li><a href="#projects"><span class="lbl">Projects</span><i></i></a></li><li><a href="#research"><span class="lbl">Publications</span><i></i></a></li><li><a href="#more"><span class="lbl">More from GitHub</span><i></i></a></li><li><a href="#education"><span class="lbl">Education & skills</span><i></i></a></li><li><a href="#contact"><span class="lbl">Contact</span><i></i></a></li></ol></nav>
 <main id="home">
   <div class="hero">
     <canvas id="fusion" aria-hidden="true"></canvas>
@@ -614,8 +614,46 @@ main, footer { position: relative; z-index: 0; }
           </div>
         </article>
       </div>
+    </div>
+  </section>
 
-      <div class="more-head">
+  <!-- RESEARCH -->
+  <section class="block" id="research">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Research</span>
+        <h2>Publications</h2>
+        <p>Full list on <a href="https://scholar.google.com/citations?user=A44AzLgAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>.</p>
+      </div>
+      <article class="paper">
+        <div class="paper-body">
+          <span class="venue"><b>IEEE EMBC 2025</b> · Copenhagen, Denmark · First author</span>
+          <h3>GlucoNet: A Hybrid Learning Methodology for Non-Invasive Blood Glucose Estimation from PPG</h3>
+          <p class="authors"><u>Verma, R.</u>, Agrawal, P., Kumari, R., Sarkar, S., Das, P., &amp; Acharyya, A.</p>
+          <p style="color:var(--body)">A hybrid CNN–BiLSTM that estimates blood glucose from a photoplethysmography (PPG) signal, the optical pulse reading a wearable already takes, so no finger-prick is needed.</p>
+          <div class="kv">
+            <div><b>3.28</b><span>RMSE, mg/dL</span></div>
+            <div><b>0.96</b><span>R² across datasets</span></div>
+            <div><b>120</b><span>patients in hospital validation</span></div>
+          </div>
+          <div class="cta">
+            <a class="btn" href="https://ieeexplore.ieee.org/abstract/document/11253359" target="_blank" rel="noopener">Read on IEEE Xplore</a>
+            <a class="btn" href="https://scholar.google.com/citations?user=A44AzLgAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
+          </div>
+        </div>
+        <div class="paper-viz">
+          <span class="eyebrow">GlucoNet, live</span>
+          <canvas id="ppg" aria-hidden="true"></canvas>
+          <span class="note">Illustration: a PPG window flows through the CNN and BiLSTM, and the estimate tracks the reference glucose.</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- MORE FROM GITHUB -->
+  <section class="block more" id="more">
+    <div class="wrap">
+      <div class="more-head" style="margin-top:0">
         <h3>More from GitHub</h3>
         <div class="filters" role="group" aria-label="Filter projects">
           <button type="button" id="f-all" data-f="all" aria-pressed="true">All</button>
@@ -659,38 +697,7 @@ main, footer { position: relative; z-index: 0; }
     </div>
   </section>
 
-  <!-- RESEARCH -->
-  <section class="block" id="research">
-    <div class="wrap">
-      <div class="sec-head">
-        <span class="eyebrow">Research</span>
-        <h2>Publications</h2>
-        <p>Full list on <a href="https://scholar.google.com/citations?user=A44AzLgAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>.</p>
-      </div>
-      <article class="paper">
-        <div class="paper-body">
-          <span class="venue"><b>IEEE EMBC 2025</b> · Copenhagen, Denmark · First author</span>
-          <h3>GlucoNet: A Hybrid Learning Methodology for Non-Invasive Blood Glucose Estimation from PPG</h3>
-          <p class="authors"><u>Verma, R.</u>, Agrawal, P., Kumari, R., Sarkar, S., Das, P., &amp; Acharyya, A.</p>
-          <p style="color:var(--body)">A hybrid CNN–BiLSTM that estimates blood glucose from a photoplethysmography (PPG) signal, the optical pulse reading a wearable already takes, so no finger-prick is needed.</p>
-          <div class="kv">
-            <div><b>3.28</b><span>RMSE, mg/dL</span></div>
-            <div><b>0.96</b><span>R² across datasets</span></div>
-            <div><b>120</b><span>patients in hospital validation</span></div>
-          </div>
-          <div class="cta">
-            <a class="btn" href="https://ieeexplore.ieee.org/abstract/document/11253359" target="_blank" rel="noopener">Read on IEEE Xplore</a>
-            <a class="btn" href="https://scholar.google.com/citations?user=A44AzLgAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
-          </div>
-        </div>
-        <div class="paper-viz">
-          <span class="eyebrow">GlucoNet, live</span>
-          <canvas id="ppg" aria-hidden="true"></canvas>
-          <span class="note">Illustration: a PPG window flows through the CNN and BiLSTM, and the estimate tracks the reference glucose.</span>
-        </div>
-      </article>
-    </div>
-  </section>
+
 
   <!-- EDUCATION + SKILLS -->
   <section class="block" id="education">
