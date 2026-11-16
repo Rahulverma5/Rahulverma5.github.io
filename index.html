@@ -320,7 +320,15 @@ main, footer { position: relative; z-index: 0; }
   background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent) 0%, color-mix(in srgb, var(--accent) 8%, transparent) 40%, transparent 70%);
   opacity: 0; transition: opacity .4s; will-change: transform; }
 .cursor-glow.on { opacity: 1; }
-@media (hover: none) { .cursor-glow { display: none; } }
+.cursor-ring { position: fixed; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 1.5px solid var(--accent); border-radius: 50%;
+  pointer-events: none; z-index: 100; opacity: 0; will-change: transform;
+  transition: width .28s cubic-bezier(.2,.7,.2,1), height .28s cubic-bezier(.2,.7,.2,1), margin .28s cubic-bezier(.2,.7,.2,1), background-color .28s, border-color .28s, opacity .3s; }
+.cursor-ring.on { opacity: .85; }
+.cursor-ring.link { width: 58px; height: 58px; margin: -29px 0 0 -29px; background-color: color-mix(in srgb, var(--accent) 14%, transparent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.cursor-ring.card { width: 46px; height: 46px; margin: -23px 0 0 -23px; border-style: dashed; }
+.cursor-ring.down { width: 22px; height: 22px; margin: -11px 0 0 -11px; background-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+.proj, .mini { transform-style: preserve-3d; }
+@media (hover: none) { .cursor-glow, .cursor-ring { display: none; } }
 .btn, .icon-btn { border-radius: 999px; }
 .btn.primary { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 78%, #fff) 0%, var(--accent) 55%, color-mix(in srgb, var(--accent) 88%, #000) 100%);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent); }
@@ -343,6 +351,7 @@ main, footer { position: relative; z-index: 0; }
 <script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('rv-theme');document.documentElement.setAttribute('data-theme',t||'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
 
 <div class="cursor-glow" id="glow" aria-hidden="true"></div>
+<div class="cursor-ring" id="ring" aria-hidden="true"></div>
 <header class="top" id="top">
   <div class="wrap">
     <a class="brand" href="#home" aria-label="Rahul Verma, back to top"><span class="brand-mark">RV</span>Rahul Verma</a>
@@ -791,20 +800,42 @@ main, footer { position: relative; z-index: 0; }
     addEventListener('scroll', upd, { passive: true }); addEventListener('resize', upd); upd();
   })();
 
-  /* Cursor glow + accent spotlight on cards */
+  /* Cursor: trailing ring + glow, magnetic buttons, 3D tilt on project cards, spotlight on cards */
   (function () {
-    var g = document.getElementById('glow'), tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
-    function tick() { cx += (tx - cx) * 0.18; cy += (ty - cy) * 0.18; g.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px)';
-      raf = Math.abs(tx - cx) + Math.abs(ty - cy) > 0.5 ? requestAnimationFrame(tick) : 0; }
+    var g = document.getElementById('glow'), ring = document.getElementById('ring'), tx = 0, ty = 0, gx = 0, gy = 0, rx = 0, ry = 0, raf = 0, started = false;
+    var SPOT = '.job-card, .impact, .paper, .edu, .skills, .link-row, .mini';
+    function tick() {
+      gx += (tx - gx) * 0.12; gy += (ty - gy) * 0.12; rx += (tx - rx) * 0.3; ry += (ty - ry) * 0.3;
+      g.style.transform = 'translate(' + gx.toFixed(1) + 'px,' + gy.toFixed(1) + 'px)';
+      ring.style.transform = 'translate(' + rx.toFixed(1) + 'px,' + ry.toFixed(1) + 'px)';
+      raf = Math.abs(tx - gx) + Math.abs(ty - gy) > 0.4 ? requestAnimationFrame(tick) : 0;
+    }
+    var magnet = null, tilt = null;
     addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
-      tx = e.clientX; ty = e.clientY; if (!g.classList.contains('on')) { cx = tx; cy = ty; g.classList.add('on'); }
+      tx = e.clientX; ty = e.clientY;
+      if (!started) { started = true; gx = rx = tx; gy = ry = ty; g.classList.add('on'); if (!reduce) ring.classList.add('on'); }
       if (!raf) raf = requestAnimationFrame(tick);
-      var c = e.target.closest && e.target.closest('.job-card, .impact, .paper, .edu, .skills, .link-row, .mini');
+      var t = e.target.closest ? e.target : document.body;
+      var link = t.closest('a, button'), card = t.closest('.proj, .mini, .job-card, .paper');
+      ring.classList.toggle('link', !!link); ring.classList.toggle('card', !link && !!card);
+      var c = t.closest(SPOT);
       if (c) { var r = c.getBoundingClientRect(); c.style.setProperty('--mx', (e.clientX - r.left) + 'px'); c.style.setProperty('--my', (e.clientY - r.top) + 'px'); }
+      if (reduce) return;
+      // magnetic buttons
+      var m = t.closest('.btn, .icon-btn');
+      if (magnet && magnet !== m) { magnet.style.transform = ''; magnet = null; }
+      if (m) { var b = m.getBoundingClientRect(); m.style.transform = 'translate(' + ((e.clientX - b.left - b.width / 2) * 0.22).toFixed(1) + 'px,' + ((e.clientY - b.top - b.height / 2) * 0.3).toFixed(1) + 'px)'; magnet = m; }
+      // 3D tilt on project cards
+      var k = t.closest('.proj, .mini');
+      if (tilt && tilt !== k) { tilt.style.transform = ''; tilt = null; }
+      if (k) { var q = k.getBoundingClientRect(), px = (e.clientX - q.left) / q.width - 0.5, py = (e.clientY - q.top) / q.height - 0.5;
+        k.style.transform = 'perspective(1000px) rotateX(' + (-py * 3).toFixed(2) + 'deg) rotateY(' + (px * 4).toFixed(2) + 'deg) translateY(-4px)'; tilt = k; }
     }, { passive: true });
-    document.addEventListener('pointerleave', function () { g.classList.remove('on'); });
-    document.addEventListener('mouseout', function (e) { var c = e.target.closest && e.target.closest('.job-card, .impact, .paper, .edu, .skills, .link-row, .mini');
+    addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') ring.classList.add('down'); });
+    addEventListener('pointerup', function () { ring.classList.remove('down'); });
+    document.addEventListener('mouseleave', function () { g.classList.remove('on'); ring.classList.remove('on'); started = false; });
+    document.addEventListener('mouseout', function (e) { var c = e.target.closest && e.target.closest(SPOT);
       if (c && !c.contains(e.relatedTarget)) { c.style.removeProperty('--mx'); c.style.removeProperty('--my'); } });
   })();
 
