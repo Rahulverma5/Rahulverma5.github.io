@@ -366,13 +366,9 @@ main, footer { position: relative; z-index: 0; }
 .dashcam, .proj .viz, .bars, .pipe, .shipband { background: var(--glass-strong); box-shadow: inset 0 1px 0 var(--gloss); }
 .job-card, .proj, .impact, .paper, .edu, .skills { border-radius: 26px; }
 .job-card, .impact, .paper, .edu, .skills, .proj { background-image: linear-gradient(180deg, var(--sheen) 0%, transparent 140px); }
-.cursor-glow { position: fixed; left: 0; top: 0; width: 380px; height: 380px; margin: -190px 0 0 -190px; border-radius: 50%; pointer-events: none; z-index: -1;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 24%, transparent) 0%, color-mix(in srgb, var(--accent) 9%, transparent) 42%, transparent 70%);
-  opacity: 0; transition: opacity .6s ease; will-change: transform; }
-.cursor-glow.on { opacity: 1; }
-.cursor-glow.rest { opacity: .55; }
+#vfield { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; display: block; }
 .proj, .mini { transform-style: preserve-3d; }
-@media (hover: none) { .cursor-glow { display: none; } }
+@media (hover: none) { #vfield { display: none; } }
 .btn, .icon-btn { border-radius: 999px; }
 .btn.primary { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 78%, #fff) 0%, var(--accent) 55%, color-mix(in srgb, var(--accent) 88%, #000) 100%);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent); }
@@ -415,7 +411,7 @@ main, footer { position: relative; z-index: 0; }
 <body>
 <script>document.documentElement.classList.add('js','loading');setTimeout(function(){document.documentElement.classList.remove('loading');},1200);try{var t=localStorage.getItem('rv-theme');document.documentElement.setAttribute('data-theme',t||'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
 
-<div class="cursor-glow" id="glow" aria-hidden="true"></div>
+<canvas id="vfield" aria-hidden="true"></canvas>
 <header class="top" id="top">
   <div class="wrap">
     <a class="brand" href="#home" aria-label="Rahul Verma, back to top"><span class="brand-mark">RV</span>Rahul Verma</a>
@@ -886,18 +882,45 @@ main, footer { position: relative; z-index: 0; }
     addEventListener('scroll', upd, { passive: true }); addEventListener('resize', upd); upd();
   })();
 
-  /* Cursor: a soft glow that trails the mouse behind the content (never over text); magnetic buttons; tilt */
+  /* Cursor: optical-flow style arrows, only on the open background (never over cards, never in the intro); magnetic buttons; tilt */
   (function () {
-    var g = document.getElementById('glow'), tx = 0, ty = 0, gx = 0, gy = 0, raf = 0, started = false, restT = 0;
-    function tick() { gx += (tx - gx) * 0.1; gy += (ty - gy) * 0.1; g.style.transform = 'translate(' + gx.toFixed(1) + 'px,' + gy.toFixed(1) + 'px)';
-      raf = Math.abs(tx - gx) + Math.abs(ty - gy) > 0.4 ? requestAnimationFrame(tick) : 0; }
+    var cv = document.getElementById('vfield'), x = cv.getContext('2d'), W = 0, H = 0, SP = 34, cells = [];
+    var mx = -9999, my = -9999, vx = 0, vy = 0, lastT = 0, active = false, raf = 0;
+    var BLOCK = '.hero, .impact, .job-card, .proj, .mini, .paper, .edu, .skills, .link-row, .shipband, .top, .more-head, .sec-head, .contact-card > div:first-child, .toc';
+    function size() { var d = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; x.setTransform(d, 0, 0, d, 0, 0);
+      cells = []; for (var yy = SP / 2; yy < H; yy += SP) for (var xx = SP / 2; xx < W; xx += SP) cells.push({ x: xx, y: yy, ax: 0, ay: 0 }); }
+    size(); addEventListener('resize', size);
+    function blocked() { var r = []; [].forEach.call(document.querySelectorAll(BLOCK), function (el) { var b = el.getBoundingClientRect(); if (b.bottom > 0 && b.top < H) r.push([b.left - 10, b.top - 10, b.right + 10, b.bottom + 10]); }); return r; }
+    function inside(r, px, py) { for (var i = 0; i < r.length; i++) if (px > r[i][0] && px < r[i][2] && py > r[i][1] && py < r[i][3]) return true; return false; }
+    function frame() {
+      var acc = css('--accent'), ink = css('--muted'), R = 240, moving = false, rects = blocked();
+      var still = performance.now() - lastT, life = active ? Math.max(0, 1 - Math.max(0, still - 350) / 700) : 0;
+      if (inside(rects, mx, my)) life = 0;
+      x.clearRect(0, 0, W, H); vx *= 0.9; vy *= 0.9;
+      for (var i = 0; i < cells.length; i++) {
+        var c = cells[i], dx = mx - c.x, dy = my - c.y, dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        var near = active ? Math.max(0, 1 - dist / R) : 0, far = active ? Math.max(0, 1 - dist / (R * 2.4)) : 0;
+        var tx = dx / dist * (0.35 + 0.65 * near) * far * 12 + vx * near * near * 0.9, ty = dy / dist * (0.35 + 0.65 * near) * far * 12 + vy * near * near * 0.9;
+        c.ax += (tx - c.ax) * 0.16; c.ay += (ty - c.ay) * 0.16;
+        var m = Math.sqrt(c.ax * c.ax + c.ay * c.ay); if (m > 0.05) moving = true;
+        var clear = Math.min(1, Math.max(0, (dist - 40) / 80)); clear = clear * clear * (3 - 2 * clear);
+        var a = Math.min(0.42, far * far * 0.5) * Math.min(1, m / 2) * clear * life;
+        if (m < 0.3 || a < 0.02 || inside(rects, c.x, c.y)) continue;
+        var len = Math.min(18, 5 + m), ux = c.ax / m, uy = c.ay / m, ex = c.x + ux * len / 2, ey = c.y + uy * len / 2;
+        x.globalAlpha = a; x.strokeStyle = near > 0.05 ? acc : ink; x.fillStyle = x.strokeStyle; x.lineWidth = 1.3;
+        x.beginPath(); x.moveTo(c.x - ux * len / 2, c.y - uy * len / 2); x.lineTo(ex, ey); x.stroke();
+        var hs = 3 + len * 0.12; x.beginPath(); x.moveTo(ex, ey); x.lineTo(ex - ux * hs - uy * hs * 0.6, ey - uy * hs + ux * hs * 0.6); x.lineTo(ex - ux * hs + uy * hs * 0.6, ey - uy * hs - ux * hs * 0.6); x.closePath(); x.fill();
+      }
+      x.globalAlpha = 1;
+      raf = ((moving && life > 0) || Math.abs(vx) + Math.abs(vy) > 0.05) ? requestAnimationFrame(frame) : 0;
+    }
+    function kick() { if (!raf && !reduce) raf = requestAnimationFrame(frame); }
     var magnet = null, tilt = null;
     addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
-      tx = e.clientX; ty = e.clientY;
-      if (!started) { started = true; gx = tx; gy = ty; }
-      g.classList.add('on'); g.classList.remove('rest'); clearTimeout(restT); restT = setTimeout(function () { g.classList.add('rest'); }, 900);
-      if (!raf) raf = requestAnimationFrame(tick);
+      var now = performance.now(), dt = Math.max(8, now - lastT); lastT = now;
+      if (active) { vx = vx * 0.5 + (e.clientX - mx) / dt * 8; vy = vy * 0.5 + (e.clientY - my) / dt * 8; }
+      mx = e.clientX; my = e.clientY; active = true; kick();
       if (reduce) return;
       var t = e.target.closest ? e.target : document.body;
       var m = t.closest('.btn, .icon-btn');
@@ -908,27 +931,8 @@ main, footer { position: relative; z-index: 0; }
       if (k) { var q = k.getBoundingClientRect(), px = (e.clientX - q.left) / q.width - 0.5, py = (e.clientY - q.top) / q.height - 0.5;
         k.style.transform = 'perspective(1000px) rotateX(' + (-py * 3).toFixed(2) + 'deg) rotateY(' + (px * 4).toFixed(2) + 'deg) translateY(-4px)'; tilt = k; }
     }, { passive: true });
-    document.addEventListener('mouseleave', function () { g.classList.remove('on', 'rest'); });
-  })();
-
-  /* Section entrances: only elements below the fold at load start hidden, then rise in once */
-  (function () {
-    if (reduce || !('IntersectionObserver' in window)) return;
-    var els = [].slice.call(document.querySelectorAll('.sec-head, .job, .featured > .proj, .more-head, .mini, .paper, .edu, .skills, .contact-card > *, .shipband, .impact'));
-    var vh = innerHeight;
-    els = els.filter(function (el) { return el.getBoundingClientRect().top > vh * 0.95; });
-    els.forEach(function (el) { el.classList.add('pre'); });
-    var io2 = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        var el = e.target, sib = el.parentElement ? [].indexOf.call(el.parentElement.children, el) : 0;
-        el.style.transitionDelay = Math.min(sib, 5) * 70 + 'ms';
-        el.classList.add('revealing'); el.classList.remove('pre');
-        setTimeout(function () { el.classList.remove('revealing'); el.style.transitionDelay = ''; }, 900 + Math.min(sib, 5) * 70);
-        io2.unobserve(el);
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-    els.forEach(function (el) { io2.observe(el); });
+    document.addEventListener('mouseleave', function () { active = false; kick(); });
+    addEventListener('scroll', function () { x.clearRect(0, 0, W, H); }, { passive: true });
   })();
 
   /* Card spotlight */
