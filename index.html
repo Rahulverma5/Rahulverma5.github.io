@@ -1681,5 +1681,36 @@ main, footer { position: relative; z-index: 0; }
   });
 })();
 </script>
+<!-- Analytics: GoatCounter (free, no cookies). Dashboard: https://rahulverma5.goatcounter.com -->
+<script>
+(function () {
+  // Name each outbound click so the dashboard reads "click: LinkedIn", "click: Resume", etc.
+  function label(a) {
+    var h = a.getAttribute('href') || '';
+    if (/linkedin\.com/.test(h)) return 'LinkedIn';
+    if (/Resume\.pdf/i.test(h)) return 'Resume';
+    if (/^mailto:/.test(h)) return 'Email';
+    if (/scholar\.google/.test(h)) return 'Google Scholar';
+    if (/ieeexplore/.test(h)) return 'IEEE paper';
+    var m = h.match(/github\.com\/Rahulverma5\/?([^/?#]*)/i);
+    if (m) return m[1] ? 'GitHub repo: ' + m[1] : 'GitHub profile';
+    return null;
+  }
+  function send(name, where) {
+    if (window.goatcounter && window.goatcounter.count)
+      window.goatcounter.count({ path: 'click: ' + name, title: where, event: true });
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (a) {
+      var n = label(a);
+      if (n) send(n, (a.closest('section') || {}).id || 'intro');
+    } else if (e.target.closest && e.target.closest('#copyEmail')) {
+      send('Copy email', 'contact');
+    }
+  }, true);
+})();
+</script>
+<script data-goatcounter="https://rahulverma5.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
