@@ -490,22 +490,12 @@ main, footer { position: relative; z-index: 0; }
           <div class="job-card">
             <div class="job-top">
               <div><h3>Research Engineer</h3><div class="org"><b>Netradyne Technologies</b> · Bengaluru · Full time</div></div>
-              <span class="when">Nov 2026 to present</span>
-            </div>
-            <ul>
-              <li>Trained and integrated a <b>temporal end-to-end video + IMU model</b> (DINOv2, fp16) on 82K U-turn alerts on a 16-GPU cluster: precision <span class="delta">72.7% → 93.4%</span> with 5.4% recall loss, cutting false alerts <b>~3×</b> across <b>60k+ devices</b> in the US, at <b>1.5 s p95</b> end-to-end latency per alert on an NVIDIA T4.</li>
-            </ul>
-          </div>
-        </article>
-        <article class="job">
-          <div class="job-card">
-            <div class="job-top">
-              <div><h3>Data Scientist</h3><div class="org"><b>Netradyne Technologies</b> · Bengaluru · Full time</div></div>
-              <span class="when">Jul 2025 to Nov 2026</span>
+              <span class="when">Jul 2025 to present</span>
             </div>
             <div class="dashcam"><canvas id="dashcam" aria-hidden="true"></canvas><span class="cap">Illustration · on-device detection</span></div>
             <ul>
               <li>Raised precision of the on-device <b>Not-for-Me (NFM)</b> model from <span class="delta">83% → 95%</span> to meet a customer requirement, losing only 2% recall, by fine-tuning on mined hard negatives. Deployed to <b>100k+ fleet devices</b> in the US, UK and Canada.</li>
+              <li>Trained and integrated a <b>temporal end-to-end video + IMU model</b> (DINOv2, fp16) on 82K U-turn alerts on a 16-GPU cluster: precision <span class="delta">72.7% → 93.4%</span> with 5.4% recall loss, cutting false alerts <b>~3×</b> across <b>60k+ devices</b> in the US, at <b>1.5 s p95</b> end-to-end latency per alert on an NVIDIA T4.</li>
               <li>Built a <b>UK-specific stop-sign alert classifier</b> (ResNet34 + YOLO segmentation) on 162K frames: balanced accuracy <span class="delta">68.6% → 85.9%</span>, <b>75% fewer missed valid alerts</b>, at 170 ms/frame.</li>
               <li>Designed a <b>gate-detection head</b> that suppressed 80%+ of gate-related false detections, plus post-processing with stop-sign pose estimation and OpenStreetMap to remove parking-lot and multi-sign false positives.</li>
               <li>Developed an <b>IMU–GPS fusion system</b> with an Unscented Kalman Filter, raising speed-estimate frequency from <span class="delta">1 Hz → 20 Hz</span> and cutting false rolling-stop alerts by <b>76%</b>.</li>
